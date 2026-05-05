@@ -137,14 +137,14 @@ export default function RndCodeCreationForm({ onClose }) {
       newErrors.department = "Department is required";
     }
 
-    if (!formData.availableFunds) {
-      newErrors.availableFunds = "Available funds is required";
-    } else if (Number(formData.availableFunds) <= 0) {
-      newErrors.availableFunds = "Amount must be greater than 0";
+    if (!formData.totalFundReceived) {
+      newErrors.totalFundReceived = "Total fund is required";
+    } else if (Number(formData.totalFundReceived) <= 0) {
+      newErrors.totalFundReceived = "Amount must be greater than 0";
     }
 
-    if (!formData.transactionId) {
-      newErrors.transactionId = "Transaction ID is required";
+    if (!formData.bankTransactionId) {
+      newErrors.bankTransactionId = "Transaction ID is required";
     }
 
     if (!formData.piEmpId) {
@@ -163,11 +163,6 @@ export default function RndCodeCreationForm({ onClose }) {
     e.preventDefault();
 
     if (!validate()) return;
-
-    if (!formData.privateKeyFile) {
-      alert("Upload private key");
-      return;
-    }
 
     const privateKeyPem = await formData.privateKeyFile.text();
 
@@ -268,8 +263,8 @@ export default function RndCodeCreationForm({ onClose }) {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
             />
-            {errors.availableFunds && (
-              <p className="text-red-500 text-sm">{errors.availableFunds}</p>
+            {errors.totalFundReceived && (
+              <p className="text-red-500 text-sm">{errors.totalFundReceived}</p>
             )}
           </div>
 
@@ -286,8 +281,8 @@ export default function RndCodeCreationForm({ onClose }) {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"
             />
-            {errors.transactionId && (
-              <p className="text-red-500 text-sm">{errors.transactionId}</p>
+            {errors.bankTransactionId && (
+              <p className="text-red-500 text-sm">{errors.bankTransactionId}</p>
             )}
           </div>
 
@@ -374,7 +369,7 @@ export default function RndCodeCreationForm({ onClose }) {
             </div>
             <button
               type="submit"
-              disabled={!formData.projectCode || loadingCode}
+              disabled={loadingCode || !formData.projectCode}
               className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md"
             >
               Sign & Send to PI

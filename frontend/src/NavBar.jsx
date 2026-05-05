@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/spring_lab.png";
 
 function NavBar() {
   const navigate = useNavigate();
@@ -16,8 +17,17 @@ function NavBar() {
     <nav className="bg-[var(--primaryAccent)] text-white px-6 py-3 shadow-md">
       <div className="flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold">
-          E-Procura
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="SPring Labs Logo"
+            className="w-14 h-14 rounded-full"
+          />
+
+          <div className="flex flex-col leading-tight">
+            <span className="text-xl font-bold">E-Procura</span>
+            <span className="text-xs text-white/80">by SPrIng Labs</span>
+          </div>
         </Link>
 
         {/* Right Side */}

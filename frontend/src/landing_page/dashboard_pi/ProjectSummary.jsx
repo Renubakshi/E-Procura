@@ -26,7 +26,6 @@ export default function ProjectSummary() {
         }
 
         const data = await res.json();
-        console.log("data", data);
 
         setProject(data);
       } catch (err) {

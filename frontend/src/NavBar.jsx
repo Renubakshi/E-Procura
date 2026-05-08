@@ -21,12 +21,12 @@ function NavBar() {
           <img
             src={logo}
             alt="SPring Labs Logo"
-            className="w-14 h-14 rounded-full"
+            className="w-16 h-16 rounded-full"
           />
 
           <div className="flex flex-col leading-tight">
-            <span className="text-xl font-bold">E-Procura</span>
-            <span className="text-xs text-white/80">by SPrIng Labs</span>
+            <span className="text-xl md:text-2xl font-bold">E-Procura</span>
+            <span className="text-xs text-white/80">by SPring Labs</span>
           </div>
         </Link>
 
@@ -34,7 +34,6 @@ function NavBar() {
         <div className="flex items-center gap-6">
           {token ? (
             <>
-              {/* Role-based Dashboard */}
               {role === "PI" && (
                 <Link to="/pi-dashboard" className="hover:underline">
                   PI Dashboard
@@ -53,12 +52,10 @@ function NavBar() {
                 </Link>
               )}
 
-              {/* User Info */}
               <span className="text-sm bg-white/20 px-3 py-1 rounded-lg">
                 {name} ({role})
               </span>
 
-              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-lg text-sm"

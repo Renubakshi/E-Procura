@@ -30,8 +30,8 @@ export default function FundBifurcationList() {
   };
   if (loading) return <p className="text-center mt-5">Loading....</p>;
   return (
-    <div className="min-h-screen bg-[#d6e3da] mt-4">
-      <div className="flex justify-end m-4">
+    <div className="min-h-screen bg-[#d6e3da] p-4">
+      <div className="flex justify-end p-4">
         <BackButton />
       </div>
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">

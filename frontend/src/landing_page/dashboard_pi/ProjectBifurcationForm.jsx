@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import BackButton from "../../components/BackButton"
 
 
 async function readPem(file) {
@@ -188,6 +189,9 @@ const fetchProject = async () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-tr from-gray-100 to-gray-50">
       <div className="glass-card w-full max-w-4xl p-8 shadow-lg fade-in">
+        <div className="flex justify-end m-4">
+          <BackButton/>
+        </div>
         <h2 className="text-3xl font-bold text-primary text-center mb-6">
           Project Bifurcation Form
         </h2>
@@ -197,7 +201,7 @@ const fetchProject = async () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label>Project Code</label>
-              <input type="text" name="projectCode" value={formData.projectCode} onChange={handleChange} required className="w-full p-3 border rounded" disabled/>
+              <input type="text" name="projectCode" value={formData.projectCode} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" disabled />
             </div>
             <div>
               <label>Project Title</label>
@@ -208,24 +212,24 @@ const fetchProject = async () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label>PI Name</label>
-              <input disabled type="text" name="piName" value={formData.piName} onChange={handleChange} required className="w-full p-3 border rounded" />
+              <input disabled type="text" name="piName" value={formData.piName} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" />
             </div>
             <div>
               <label>Department</label>
-              <input disabled type="text" name="department" value={formData.department} readOnly className="w-full p-3 border bg-gray-100 rounded" />
+              <input disabled type="text" name="department" value={formData.department} readOnly className="w-full p-3 border bg-gray-200 rounded" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label>Bank Transaction ID</label>
-              <input disabled type="text" name="bankTransactionId" value={formData.bankTransactionId} onChange={handleChange} required className="w-full p-3 border rounded" />
+              <input disabled type="text" name="bankTransactionId" value={formData.bankTransactionId} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" />
             </div>
             
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label>PI Employee ID</label>
-              <input disabled type="text" name="piName" value={formData.piEmpId} onChange={handleChange} required className="w-full p-3 border rounded" />
+              <input disabled type="text" name="piName" value={formData.piEmpId} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" />
             </div>
             <div>
               <label>Project Status</label>
@@ -236,11 +240,11 @@ const fetchProject = async () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label>Total Fund Received (₹)</label>
-              <input disabled type="number" name="totalFundReceived" value={formData.totalFundReceived} onChange={handleChange} required className="w-full p-3 border rounded" />
+              <input disabled type="number" name="totalFundReceived" value={formData.totalFundReceived} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" />
             </div>
             <div>
               <label>Funding Year</label>
-              <input disabled type="number" name="bifurcationYear" value={formData.bifurcationYear} onChange={handleChange} required className="w-full p-3 border rounded" />
+              <input disabled type="number" name="bifurcationYear" value={formData.bifurcationYear} onChange={handleChange} required className="w-full p-3 border rounded bg-gray-200" />
             </div>
           </div>
 

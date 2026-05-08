@@ -66,9 +66,7 @@ function App() {
         <Route path="/projects" element={<FundBifurcationList />} />
 
         <Route
-          path="/fund-booking/:projectId"
-          element={<FundBookingPage />}
-        />
+          path="/fund-booking/:id" element={<FundBookingPage />}/>
       </Routes>
 
       <Footer />

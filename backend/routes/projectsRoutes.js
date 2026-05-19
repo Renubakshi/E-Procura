@@ -11,7 +11,7 @@ router.get("/pi-list",getPIList);
 router.post("/project-code", generateProjectCode );
 
 // PROJECT CODE FORM CREATED BY RND
-router.post("/", createProject);
+router.post("/", auth(["RND"]), createProject);
 
 // PI: GET ALL PROJECTS - Non-bifurcated
 router.get("/", auth(["PI"]), getProjects);

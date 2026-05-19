@@ -59,10 +59,14 @@ if (!piUser) {
     message: "Invalid PI selected"
   });
 }
-    const rndUser = await User.findOne({ role: "RND" }); // fetch RND public key
+    const rndUser = await User.findOne({ email: req.user.email }); // fetch the specific RND user signing the request
 
     if (!rndUser) {
       return res.status(404).json({ message: "RND user not found" });
+    }
+
+    if (!rndUser.publicKey) {
+      return res.status(400).json({ message: "Public key not found for this user. Please generate your key pair first." });
     }
 
     const publicKey = rndUser.publicKey;

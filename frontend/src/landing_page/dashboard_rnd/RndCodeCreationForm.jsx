@@ -170,10 +170,13 @@ export default function RndCodeCreationForm({ onClose }) {
 
     const signature = await signPayload(privateKeyPem, payload);
 
+    const token = localStorage.getItem("token");
+
     const res = await fetch("/api/projects", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
         ...formData,
@@ -187,7 +190,7 @@ export default function RndCodeCreationForm({ onClose }) {
     if (res.ok) {
       setSuccess(true);
     } else {
-      alert("Signature verification failed");
+      alert(data.message || data.msg || "Request failed");
     }
   };
 

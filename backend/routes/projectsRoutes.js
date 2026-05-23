@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 import { auth } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
-import { generateProjectCode, createProject,getPIList,getProjects,getBifurcatedProjects, getProjectsById, updateProjectByPI  } from "./controllers/projectRoutesController.js";
+import { generateProjectCode, createProject,getPIList,getProjects,getBifurcatedProjects, getProjectsById, updateProjectByPI  } from "../controllers/projectRoutesController.js";
 
 // Generate Empld - PI List for rnd form
 router.get("/pi-list",getPIList);

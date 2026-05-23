@@ -7,17 +7,18 @@ import Purchase from "./models/Purchase.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { auth } from "./middleware/auth.js";
-import fs from "fs"
+import fs from "fs";
 import puppeteer from "puppeteer";
-import projectRoutes from "./routes/projectsRoutes.js"
-import fileRoutes from "./routes/fileRoutes.js"
+import projectRoutes from "./routes/projectsRoutes.js";
+import fileRoutes from "./routes/fileRoutes.js";
 import fundBookingRoutes from "./routes/fundBookingRoutes.js";
-
+import recruitmentRoutes from "./routes/recruitmentRoutes.js";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("uploads"));
+app.use("/generated-pdfs", express.static("generated-pdfs"));
 
 // connect to DB
 connectDB();
@@ -25,7 +26,8 @@ connectDB();
 // SIGNUP API
 app.post("/api/signup", async (req, res) => {
   try {
-    const { fullName, email, employeeId, department, role, password } = req.body;
+    const { fullName, email, employeeId, department, role, password } =
+      req.body;
 
     // check existing email
     const userExist = await User.findOne({ email });
@@ -46,18 +48,16 @@ app.post("/api/signup", async (req, res) => {
     });
 
     res.json({ success: true, userId: user._id });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-
 // ⬇️ Save Public Key After Key Generation
 app.post("/api/save-public-key", async (req, res) => {
-   console.log("Incoming request body:");
-    console.log(req.body);
+  console.log("Incoming request body:");
+  console.log(req.body);
   try {
     const { email, publicKey } = req.body;
 
@@ -68,14 +68,13 @@ app.post("/api/save-public-key", async (req, res) => {
     const user = await User.findOneAndUpdate(
       { email },
       { publicKey },
-      { new: true }
-    )
+      { new: true },
+    );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     res.json({ message: "Public key saved successfully" });
-
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error" });
@@ -97,9 +96,14 @@ app.post("/api/login", async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: "Invalid password" });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role.toUpperCase(), email:user.email,employeeId:user.employeeId},
+      {
+        id: user._id,
+        role: user.role.toUpperCase(),
+        email: user.email,
+        employeeId: user.employeeId,
+      },
       "SECRET_KEY",
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     res.json({
@@ -115,7 +119,6 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 app.post("/purchase/submit", async (req, res) => {
   try {
@@ -150,19 +153,16 @@ app.post("/purchase/submit", async (req, res) => {
     });
 
     res.send(pdfBuffer);
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error generating PDF");
   }
 });
 
-
-app.use("/api/projects",projectRoutes); 
-app.use("/api/files",fileRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/files", fileRoutes);
 app.use("/api/fund-booking", fundBookingRoutes);
-
-
+app.use("/api/recruitment", recruitmentRoutes);
 
 // SERVER RUN
 app.listen(5000, () => console.log("🚀 Server running on port 5000"));

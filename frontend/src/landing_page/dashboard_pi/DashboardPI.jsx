@@ -9,7 +9,7 @@ export default function DashboardPI() {
   const [projects, setProjects] = useState([]);
   const [searchCode, setSearchCode] = useState("");
 
-  // 🔹 Fetch PI projects
+  // Fetch PI projects
   useEffect(() => {
     const fetchProjects = async () => {
       try {

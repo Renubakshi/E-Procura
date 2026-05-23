@@ -67,9 +67,7 @@ export default function PIRequestsList() {
             <tr>
               <th className="p-3 border">Project Code</th>
               <th className="p-3 border">Budget Head</th>
-              <th className="p-3 border">
-                Requested Amount
-              </th>
+              <th className="p-3 border">Requested Amount</th>
               <th className="p-3 border">Process</th>
               <th className="p-3 border">Status</th>
               <th className="p-3 border">Remark By Dean</th>
@@ -136,7 +134,7 @@ export default function PIRequestsList() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/recruitment-form/${req._id}`
+                            `/manpower-hiring`
                           )
                         }
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

@@ -67,13 +67,11 @@ export default function PIRequestsList() {
             <tr>
               <th className="p-3 border">Project Code</th>
               <th className="p-3 border">Budget Head</th>
-              <th className="p-3 border">
-                Requested Amount
-              </th>
+              <th className="p-3 border">Requested Amount</th>
               <th className="p-3 border">Process</th>
               <th className="p-3 border">Status</th>
               <th className="p-3 border">Remark By Dean</th>
-              <th className="p-3 border">Action</th>
+              
             </tr>
           </thead>
 
@@ -113,44 +111,6 @@ export default function PIRequestsList() {
 
                 <td className="p-3 border text-sm text-gray-700">
                   {req.remarkByDean || "-"}
-                </td>
-
-                <td className="p-3 border">
-                  {/* Rejected */}
-                  {req.status === "Rejected" && (
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/fund-booking/${req.projectId}`
-                        )
-                      }
-                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Reapply
-                    </button>
-                  )}
-
-                  {/* Approved manpower */}
-                  {req.status === "Approved" &&
-                    req.process === "manpower" && (
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/recruitment-form/${req._id}`
-                          )
-                        }
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Fill Recruitment Form
-                      </button>
-                    )}
-
-                  {/* Pending */}
-                  {req.status === "Pending" && (
-                    <span className="text-gray-500">
-                      No Action
-                    </span>
-                  )}
                 </td>
               </tr>
             ))}

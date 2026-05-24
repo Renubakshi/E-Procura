@@ -6,12 +6,12 @@ import DashboardDORD from "./landing_page/dashboard_DORD/DashboardDORD";
 import ProjectBifurcationForm from "./landing_page/dashboard_pi/ProjectBifurcationForm";
 import ProjectSummary from "./landing_page/dashboard_pi/ProjectSummary";
 import FundBookingPage from "./landing_page/FundBookingPage";
-import PurchaseRequisitionForm from "./landing_page/process_forms/PurchaseRequisitionForm"
+import PurchaseRequisitionForm from "./landing_page/process_forms/PurchaseRequisitionForm";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import AuthPageWrapper from "./components/AuthPageWrapper";
 import GenerateKey from "./landing_page/key_gen/GenerateKey";
-
+import ManpowerHiringForm from "./landing_page/process_forms/ManpowerHiringForms";
 import FundBifurcationList from "./landing_page/dashboard_pi/FundBifurcationList";
 import PIRequestsList from "./landing_page/dashboard_pi/PIRequestsList";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -64,10 +64,9 @@ function App() {
         <Route path="/projects/:id" element={<ProjectBifurcationForm />} />
         <Route path="/summary/:id" element={<ProjectSummary />} />
         <Route path="/projects" element={<FundBifurcationList />} />
-        <Route path="/pi-fund-requests" element={<PIRequestsList/>}/>
-
-        <Route
-          path="/fund-booking/:id" element={<FundBookingPage />}/>
+        <Route path="/pi-fund-requests" element={<PIRequestsList />} />
+        <Route path="/manpower-hiring" element={<ManpowerHiringForm />} />
+        <Route path="/fund-booking/:id" element={<FundBookingPage />} />
       </Routes>
 
       <Footer />

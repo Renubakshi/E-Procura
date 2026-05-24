@@ -1,6 +1,6 @@
-import CodeCreation from "../../models/codeCreation.js";
+import CodeCreation from "../models/codeCreation.js";
 import crypto from "crypto";
-import User from "../../models/user.js"
+import User from "../models/user.js"
 import { title } from "process";
 import fs from "fs"
 

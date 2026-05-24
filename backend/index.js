@@ -12,6 +12,7 @@ import puppeteer from "puppeteer";
 import projectRoutes from "./routes/projectsRoutes.js"
 import fileRoutes from "./routes/fileRoutes.js"
 import fundBookingRoutes from "./routes/fundBookingRoutes.js";
+import recruitmentRoutes from "./routes/recruitmentRoutes.js"
 
 
 const app = express();
@@ -161,6 +162,7 @@ app.post("/purchase/submit", async (req, res) => {
 app.use("/api/projects",projectRoutes); 
 app.use("/api/files",fileRoutes);
 app.use("/api/fund-booking", fundBookingRoutes);
+app.use("/api/recruitment", recruitmentRoutes);
 
 
 

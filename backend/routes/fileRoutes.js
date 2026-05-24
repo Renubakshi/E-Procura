@@ -5,6 +5,40 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 const router = express.Router();
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// manpower hiring form pdf download
+router.get("/download-pdf/:fileName", (req, res) => {
+  try {
+    console.log("download hit");
+    
+    const { fileName } = req.params;
+
+    const filePath = path.join(
+      __dirname,
+      "../generated-pdfs",
+      fileName
+    );
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: "File not found",
+      });
+    }
+
+    res.download(filePath, fileName);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+});
 
 // Download project file with tamper check
 router.get("/:id", auth(["PI"]), async (req, res) => {
@@ -55,4 +89,7 @@ router.get("/:id", auth(["PI"]), async (req, res) => {
     res.status(500).json({ msg: "Error reading file" });
   }
 });
+
+
+
 export default router;

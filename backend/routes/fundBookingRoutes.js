@@ -1,5 +1,5 @@
 import express from "express";
-import { createFundBooking, getMyFundRequests} from "./controllers/fundBookingController.js";
+import { createFundBooking, getMyFundRequests} from "../controllers/fundBookingController.js";
 import {auth} from "../middleware/auth.js";
 
 const router = express.Router();

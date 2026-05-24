@@ -1,5 +1,5 @@
-import FundBooking from "../../models/FundBooking.js";
-import CodeCreation from "../../models/codeCreation.js";
+import FundBooking from "../models/FundBooking.js";
+import CodeCreation from "../models/codeCreation.js";
 
 export const createFundBooking = async (req, res) => {
   try {

@@ -15,14 +15,11 @@ export default function PIRequestsList() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(
-        "http://localhost:5000/api/fund-booking",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch("http://localhost:5000/api/fund-booking", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await res.json();
 
@@ -58,9 +55,7 @@ export default function PIRequestsList() {
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       <div className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-2xl font-bold mb-6">
-          My Fund Requests
-        </h2>
+        <h2 className="text-2xl font-bold mb-6">My Fund Requests</h2>
 
         <table className="w-full border border-gray-300">
           <thead className="bg-gray-200">
@@ -71,42 +66,32 @@ export default function PIRequestsList() {
               <th className="p-3 border">Process</th>
               <th className="p-3 border">Status</th>
               <th className="p-3 border">Remark By Dean</th>
-              <th className="p-3 border">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {requests.map((req) => (
               <tr key={req._id} className="text-center">
-                <td className="p-3 border">
-                  {req.projectCode}
-                </td>
+                <td className="p-3 border">{req.projectCode}</td>
 
-                <td className="p-3 border">
-                  {req.head}
-                </td>
+                <td className="p-3 border">{req.head}</td>
 
                 <td className="p-3 border">
                   ₹ {req.requestedAmount?.toLocaleString()}
                 </td>
 
-                <td className="p-3 border capitalize">
-                  {req.process}
-                </td>
+                <td className="p-3 border capitalize">{req.process}</td>
 
                 <td
                   className={`p-3 border font-semibold ${getStatusStyle(
-                    req.status
+                    req.status,
                   )}`}
                 >
-                  {req.status === "Pending" &&
-                    "⏳ Pending"}
+                  {req.status === "Pending" && "⏳ Pending"}
 
-                  {req.status === "Approved" &&
-                    "✅ Approved"}
+                  {req.status === "Approved" && "✅ Approved"}
 
-                  {req.status === "Rejected" &&
-                    "❌ Rejected"}
+                  {req.status === "Rejected" && "❌ Rejected"}
                 </td>
 
                 <td className="p-3 border text-sm text-gray-700">
@@ -117,11 +102,7 @@ export default function PIRequestsList() {
                   {/* Rejected */}
                   {req.status === "Rejected" && (
                     <button
-                      onClick={() =>
-                        navigate(
-                          `/fund-booking/${req.projectId}`
-                        )
-                      }
+                      onClick={() => navigate(`/fund-booking/${req.projectId}`)}
                       className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                       Reapply
@@ -129,25 +110,18 @@ export default function PIRequestsList() {
                   )}
 
                   {/* Approved manpower */}
-                  {req.status === "Approved" &&
-                    req.process === "manpower" && (
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/manpower-hiring`
-                          )
-                        }
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Fill Recruitment Form
-                      </button>
-                    )}
+                  {req.status === "Approved" && req.process === "manpower" && (
+                    <button
+                      onClick={() => navigate(`/manpower-hiring`)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Fill Recruitment Form
+                    </button>
+                  )}
 
                   {/* Pending */}
                   {req.status === "Pending" && (
-                    <span className="text-gray-500">
-                      No Action
-                    </span>
+                    <span className="text-gray-500">No Action</span>
                   )}
                 </td>
               </tr>

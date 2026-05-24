@@ -24,6 +24,7 @@ const positionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
   salaryEnd: {
     type: String,
     required: true,
@@ -87,6 +88,7 @@ const recruitmentSchema = new mongoose.Schema(
     piDepartment: {
       type: String,
     },
+
     officeAddress: {
       type: String,
     },
@@ -106,15 +108,41 @@ const recruitmentSchema = new mongoose.Schema(
     positions: [positionSchema],
 
     // ======================================
+    // FUND DETAILS
+    // ======================================
+
+    process: {
+      type: String,
+    },
+
+    fundHead: {
+      type: String,
+    },
+
+    fundHeadAmount: {
+      type: Number,
+    },
+
+    requestedAmount: {
+      type: Number,
+    },
+
+    requestedBy: {
+      type: String,
+    },
+
+    // ======================================
     // APPLICATION DETAILS
     // ======================================
 
     submissionEmail: {
       type: String,
     },
-emailSubject: {
-  type: String,
-},
+
+    emailSubject: {
+      type: String,
+    },
+
     submissionDeadline: {
       type: String,
     },
@@ -134,6 +162,7 @@ emailSubject: {
     venue: {
       type: String,
     },
+
     reportingTime: {
       type: String,
     },
@@ -146,11 +175,11 @@ emailSubject: {
       {
         type: String,
       },
-      
     ],
+
     attachment: {
-  type: String,
-},
+      type: String,
+    },
 
     // ======================================
     // PDF DETAILS

@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 
-export default function ManpowerHiringForms({ projectData }) {
+import { useNavigate } from "react-router-dom";
+
+export default function ManpowerHiringForms({
+  projectData,
+  process,
+  selectedHead,
+  selectedHeadAmount,
+}) {
+  const navigate = useNavigate();
   const [adPdf, setAdPdf] = useState("");
   const [formData, setFormData] = useState({
     projectTitle: "",
@@ -26,6 +34,10 @@ export default function ManpowerHiringForms({ projectData }) {
         desirableQualifications: [""],
       },
     ],
+    process: "",
+    fundHead: "",
+    fundHeadAmount: "",
+    requestedAmount: "",
 
     submissionEmail: "",
     emailSubject: "",
@@ -38,6 +50,58 @@ export default function ManpowerHiringForms({ projectData }) {
     committeeMembers: [""],
     attachment: null,
   });
+  console.log("head", selectedHead);
+  console.log("process", process);
+
+  const getDurationInMonths = (durationValue) => {
+    if (!durationValue) return 0;
+
+    const text = String(durationValue.toLowerCase()) || 0;
+
+    const value = parseInt(text) || 0;
+
+    // Days → Months
+    if (text.includes("day")) {
+      return value / 30;
+    }
+
+    // Months → Months
+    if (text.includes("month")) {
+      return value;
+    }
+
+    // Years → Months
+    if (text.includes("year")) {
+      return value * 12;
+    }
+
+    return 0;
+  };
+
+  const calculateTotalManpowerCost = () => {
+    let total = 0;
+
+    formData.positions.forEach((position) => {
+      const posts = Number(position.numberOfPosts) || 0;
+
+      const salary = Number(position.salaryEnd) || 0;
+
+      // duration months extract
+      const months = getDurationInMonths(position.duration) || 0;
+
+      total += posts * salary * months;
+    });
+
+    return total;
+  };
+  const isBudgetExceeded = calculateTotalManpowerCost() > selectedHeadAmount;
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      requestedAmount: calculateTotalManpowerCost(),
+    }));
+  }, [formData.positions]);
 
   useEffect(() => {
     if (projectData) {
@@ -49,9 +113,12 @@ export default function ManpowerHiringForms({ projectData }) {
         piName: projectData.piName || "",
         piDepartment: projectData.department || "",
         piEmail: projectData.piSubmissions?.submittedBy || "",
+        process: process,
+        fundHead: selectedHead,
+        fundHeadAmount: selectedHeadAmount,
       }));
     }
-  }, [projectData]);
+  }, [projectData, process, selectedHead, selectedHeadAmount]);
 
   // for Email Subject
   useEffect(() => {
@@ -182,17 +249,21 @@ export default function ManpowerHiringForms({ projectData }) {
     e.preventDefault();
 
     try {
-       // =========================
-    // CREATE FORMDATA
-    // =========================
+      if (isBudgetExceeded) {
+        alert("Requested manpower cost exceeds available budget");
+        return;
+      }
+      // =========================
+      // CREATE FORMDATA
+      // =========================
 
-    const sendData = new FormData();
+      const sendData = new FormData();
 
-    // pura formData object
-    sendData.append("data", JSON.stringify(formData));
+      // pura formData object
+      sendData.append("data", JSON.stringify(formData));
 
-    // uploaded pdf file
-    sendData.append("attachment", formData.attachment);
+      // uploaded pdf file
+      sendData.append("attachment", formData.attachment);
       // =========================
       // RECRUITMENT PDF
       // =========================
@@ -258,6 +329,12 @@ export default function ManpowerHiringForms({ projectData }) {
           `http://localhost:5000/api/files/download-pdf/${approvalData.pdf}`,
           "_blank",
         );
+
+        alert("✅ PDFs downloaded successfully & form submitted");
+
+        setTimeout(() => {
+          navigate("/pi-dashboard");
+        }, 3000);
       }
     } catch (err) {
       console.log(err);
@@ -331,6 +408,7 @@ export default function ManpowerHiringForms({ projectData }) {
                   type="text"
                   name="sponsoringAgency"
                   value={formData.sponsoringAgency}
+                  required
                   onChange={handleChange}
                   placeholder="Enter Sponsoring Agency"
                   className={inputClass}

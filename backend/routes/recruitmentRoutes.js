@@ -1,13 +1,23 @@
 import express from "express";
+
 const router = express.Router();
+
 import { upload } from "../middleware/upload.js";
+
+import { auth } from "../middleware/auth.js";
+
 import {
   generateApprovalLetter,
   createRecruitmentAdvertisement,
   getAllRecruitments,
   approveRecruitment,
   rejectRecruitment,
+  getMyRequests,
 } from "../controllers/recruitmentController.js";
+
+// ======================================
+// PI ROUTES
+// ======================================
 
 router.post("/generate-approval-letter", generateApprovalLetter);
 
@@ -16,6 +26,10 @@ router.post(
   upload.single("attachment"),
   createRecruitmentAdvertisement,
 );
+
+// PI can view own requests
+
+router.get("/my-requests", auth(["PI"]), getMyRequests);
 
 // ======================================
 // DEAN DASHBOARD ROUTES

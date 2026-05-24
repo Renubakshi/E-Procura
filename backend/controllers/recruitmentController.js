@@ -253,53 +253,38 @@ const createRecruitmentAdvertisement = async (req, res) => {
     const bodyData = JSON.parse(req.body.data);
     const formattedData = {
       projectTitle: bodyData.projectTitle,
-
       projectCode: bodyData.projectCode,
-
       sponsoringAgency: bodyData.sponsoringAgency,
-
       piName: bodyData.piName,
-
       piDesignation: bodyData.piDesignation,
-
       piDepartment: bodyData.piDepartment,
-
       officeAddress: bodyData.officeAddress,
-
       piEmail: bodyData.piEmail,
-
+      requestedBy: req.user.email,
       piWebsite: bodyData.piWebsite,
-
       positions: bodyData.positions.map((position) => ({
         positionName: position.positionName,
-
         numberOfPosts: position.numberOfPosts,
-
         ageLimit: position.ageLimit,
-
         salaryStart: position.salaryStart,
-
         salaryEnd: position.salaryEnd,
-
         duration: position.duration,
-
         essentialQualifications: position.essentialQualifications,
-
         desirableQualifications: position.desirableQualifications,
       })),
+      process: bodyData.process,
+      fundHead: bodyData.fundHead,
+      fundHeadAmount: bodyData.fundHeadAmount,
+      requestedAmount: bodyData.requestedAmount,
 
       submissionEmail: bodyData.submissionEmail,
       emailSubject: bodyData.emailSubject,
       submissionDeadline: bodyData.submissionDeadline,
 
       interviewDate: bodyData.interviewDate || "To be announced",
-
       interviewMode: bodyData.interviewMode || "Offline",
-
       venue: bodyData.venue,
-
       reportingTime: bodyData.reportingTime,
-
       committeeMembers: bodyData.committeeMembers,
       attachment: req.file?.path,
     };
@@ -658,10 +643,27 @@ const rejectRecruitment = async (req, res) => {
   }
 };
 
+// get fund request status
+const getMyRequests = async (req, res) => {
+  try {
+    const requests = await Recruitment.find({
+      requestedBy: req.user.email,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
 export {
   generateApprovalLetter,
   createRecruitmentAdvertisement,
   getAllRecruitments,
   approveRecruitment,
   rejectRecruitment,
+  getMyRequests,
 };

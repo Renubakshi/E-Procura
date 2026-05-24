@@ -21,7 +21,7 @@ export default function FundBookingPage() {
     },
     {
       label: "Project Staff recruitment (Man power Hiring)",
-      value: "manpower",
+      value: "manpower_hiring",
     },
     {
       label: "Chair Person",
@@ -106,7 +106,8 @@ export default function FundBookingPage() {
   }, [id]);
 
   if (loading) return <p className="p-10 text-gray-700">Loading...</p>;
-  if (!projectData) return <p className="p-10 text-gray-700">No project found</p>;
+  if (!projectData)
+    return <p className="p-10 text-gray-700">No project found</p>;
 
   // const handleSubmit = async () => {
   //   try {
@@ -121,7 +122,7 @@ export default function FundBookingPage() {
   //     }
   //     setLoadingSubmit(true);
 
-      // const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
 
   //     const res = await fetch("http://localhost:5000/api/fund-booking", {
   //       method: "POST",
@@ -158,7 +159,9 @@ export default function FundBookingPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="bg-white p-8 rounded-2xl shadow-lg">
         {/* HEADER */}
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Fund Booking</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          Complete the Processes
+        </h2>
 
         {/* Project Code */}
         <p className="mb-6 text-gray-600">
@@ -218,18 +221,23 @@ export default function FundBookingPage() {
         </div>
 
         {/* MANPOWER FORM */}
-        {process === "manpower" && (
+        {process === "manpower_hiring" && selectedHead && (
           <div className="border-t pt-6 mt-6">
             <h3 className="text-lg font-semibold mb-4">
               Manpower Hiring Details
             </h3>
-            <ManpowerHiringForm projectData={projectData}/>
+
+            <ManpowerHiringForm
+              projectData={projectData}
+              process={process}
+              selectedHead={selectedHead}
+              selectedHeadAmount={
+                projectData.piSubmissions?.divisionHeads[selectedHead]
+              }
+            />
           </div>
         )}
       </div>
-  </div>
-)}
-
-    
- 
-
+    </div>
+  );
+}

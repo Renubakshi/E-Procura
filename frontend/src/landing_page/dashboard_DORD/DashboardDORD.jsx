@@ -399,164 +399,286 @@ function DashboardDORDPreview() {
   // ======================================
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-8">
       {/* ====================================== */}
       {/* HEADER */}
       {/* ====================================== */}
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-semibold">Dean Recruitment Dashboard</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+            Dean Recruitment Dashboard
+          </h1>
 
-        <p className="text-gray-500">
-          Total Requests: {filteredProjects.length}
-        </p>
+          <p className="text-gray-500 mt-2 text-sm">
+            Review and manage recruitment approval requests
+          </p>
+        </div>
+
+        <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-200">
+          <p className="text-sm text-gray-500">Total Requests</p>
+
+          <h2 className="text-3xl font-bold text-blue-700">
+            {filteredProjects.length}
+          </h2>
+        </div>
       </div>
 
       {/* ====================================== */}
       {/* SEARCH + FILTER */}
       {/* ====================================== */}
 
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search by Project Code, PI Name, or Project Title"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border px-4 py-2 rounded-lg w-full md:w-1/2 outline-none"
-        />
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-8">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search by Project Code, PI Name, or Project Title"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 border border-gray-300 px-5 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
 
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border px-4 py-2 rounded-lg cursor-pointer outline-none"
-        >
-          <option value="All">All</option>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border border-gray-300 px-5 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[180px]"
+          >
+            <option value="All">All Requests</option>
 
-          <option value="Pending">Pending</option>
+            <option value="Pending">Pending</option>
 
-          <option value="Approved">Approved</option>
+            <option value="Approved">Approved</option>
 
-          <option value="Rejected">Rejected</option>
-        </select>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
       </div>
 
       {/* ====================================== */}
       {/* TABLE */}
       {/* ====================================== */}
 
-      <div className="overflow-x-auto bg-white rounded-xl shadow">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-4 text-left">Project Code</th>
+      <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-gray-700">
+            {/* ====================================== */}
+            {/* TABLE HEAD */}
+            {/* ====================================== */}
 
-              <th className="p-4 text-left">Project Title</th>
-
-              <th className="p-4 text-left">PI Name</th>
-
-              <th className="p-4 text-left">Department</th>
-
-              <th className="p-4 text-center">Status</th>
-
-              <th className="p-4 text-center">PDF</th>
-
-              <th className="p-4 text-center">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
+            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
               <tr>
-                <td colSpan="7" className="text-center p-6">
-                  Loading...
-                </td>
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Project Code
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Project Title
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  PI Name
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Fund Head
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Available Fund
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Requested Fund
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Remaining Fund
+                </th>
+
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Department
+                </th>
+
+                <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Status
+                </th>
+
+                <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                  PDF
+                </th>
+
+                <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Actions
+                </th>
               </tr>
-            ) : filteredProjects.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="text-center p-6 text-gray-500">
-                  No recruitment requests found
-                </td>
-              </tr>
-            ) : (
-              filteredProjects.map((project) => {
-                const isFinal =
-                  project.status === "Approved" ||
-                  project.status === "Rejected";
+            </thead>
 
-                return (
-                  <tr key={project._id} className="border-t hover:bg-gray-50">
-                    {/* PROJECT CODE */}
+            {/* ====================================== */}
+            {/* TABLE BODY */}
+            {/* ====================================== */}
 
-                    <td className="p-4">{project.projectCode}</td>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="11" className="text-center p-10 text-gray-500">
+                    Loading recruitment requests...
+                  </td>
+                </tr>
+              ) : filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan="11" className="text-center p-10 text-gray-500">
+                    No recruitment requests found
+                  </td>
+                </tr>
+              ) : (
+                filteredProjects.map((project) => {
+                  const isFinal =
+                    project.status === "Approved" ||
+                    project.status === "Rejected";
 
-                    {/* PROJECT TITLE */}
+                  const remainingFund =
+                    (project.fundHeadAmount || 0) -
+                    (project.requestedAmount || 0);
 
-                    <td className="p-4">{project.projectTitle}</td>
+                  const isOverBudget =
+                    project.requestedAmount > project.fundHeadAmount;
 
-                    {/* PI NAME */}
+                  return (
+                    <tr
+                      key={project._id}
+                      className="border-b border-gray-100 hover:bg-blue-50/40 transition duration-200"
+                    >
+                      {/* PROJECT CODE */}
 
-                    <td className="p-4">{project.piName}</td>
+                      <td className="px-6 py-6 font-semibold text-gray-800">
+                        {project.projectCode}
+                      </td>
 
-                    {/* DEPARTMENT */}
+                      {/* PROJECT TITLE */}
 
-                    <td className="p-4">{project.piDepartment}</td>
+                      <td className="px-6 py-6">
+                        <div className="font-semibold text-gray-800">
+                          {project.projectTitle}
+                        </div>
+                      </td>
 
-                    {/* STATUS */}
+                      {/* PI NAME */}
 
-                    <td className="p-4 text-center">
-                      <span
-                        className={`text-white px-3 py-1 rounded-full text-xs ${getStatusColor(
-                          project.status,
-                        )}`}
-                      >
-                        {project.status}
-                      </span>
-                    </td>
+                      <td className="px-6 py-6">
+                        <div className="font-medium">{project.piName}</div>
+                      </td>
 
-                    {/* VIEW PDF */}
+                      {/* FUND HEAD */}
 
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => viewPDF(project.pdfPath)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
-                      >
-                        View PDF
-                      </button>
-                    </td>
+                      <td className="px-6 py-6">
+                        <div className="max-w-[180px] text-gray-700">
+                          {project.fundHead || "-"}
+                        </div>
+                      </td>
 
-                    {/* ACTIONS */}
+                      {/* AVAILABLE FUND */}
 
-                    <td className="p-4 text-center space-x-2">
-                      <button
-                        disabled={isFinal}
-                        onClick={() => approveRecruitment(project._id)}
-                        className={`px-3 py-1 rounded text-sm ${
-                          isFinal
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-green-500 hover:bg-green-600 text-white cursor-pointer"
-                        }`}
-                      >
-                        Approve
-                      </button>
+                      <td className="px-6 py-6">
+                        <div className="font-semibold text-blue-700 bg-blue-50 px-3 py-2 rounded-xl inline-block">
+                          ₹{project.fundHeadAmount?.toLocaleString() || 0}
+                        </div>
+                      </td>
 
-                      <button
-                        disabled={isFinal}
-                        onClick={() => rejectRecruitment(project._id)}
-                        className={`px-3 py-1 rounded text-sm ${
-                          isFinal
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-red-500 hover:bg-red-600 text-white cursor-pointer"
-                        }`}
-                      >
-                        Reject
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      {/* REQUESTED FUND */}
+
+                      <td className="px-6 py-6">
+                        <div className="font-semibold text-orange-600 bg-orange-50 px-3 py-2 rounded-xl inline-block">
+                          ₹{project.requestedAmount?.toLocaleString() || 0}
+                        </div>
+                      </td>
+
+                      {/* REMAINING FUND */}
+
+                      <td className="px-6 py-6">
+                        <div
+                          className={`font-bold px-3 py-2 rounded-xl inline-block ${
+                            isOverBudget
+                              ? "bg-red-50 text-red-600"
+                              : "bg-green-50 text-green-700"
+                          }`}
+                        >
+                          ₹{remainingFund.toLocaleString()}
+                        </div>
+
+                        {isOverBudget && (
+                          <p className="text-xs text-red-500 mt-2 font-medium">
+                            Budget Exceeded
+                          </p>
+                        )}
+                      </td>
+
+                      {/* DEPARTMENT */}
+
+                      <td className="px-6 py-6">
+                        <span className="bg-gray-100 px-3 py-1 rounded-lg text-sm">
+                          {project.piDepartment}
+                        </span>
+                      </td>
+
+                      {/* STATUS */}
+
+                      <td className="px-6 py-6 text-center">
+                        <span
+                          className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide ${getStatusColor(
+                            project.status,
+                          )}`}
+                        >
+                          {project.status}
+                        </span>
+                      </td>
+
+                      {/* VIEW PDF */}
+
+                      <td className="px-6 py-6 text-center">
+                        <button
+                          onClick={() => viewPDF(project.pdfPath)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
+                        >
+                          View PDF
+                        </button>
+                      </td>
+
+                      {/* ACTIONS */}
+
+                      <td className="px-6 py-6 text-center">
+                        <div className="flex flex-col gap-2 items-center">
+                          <button
+                            disabled={isFinal || isOverBudget}
+                            onClick={() => approveRecruitment(project._id)}
+                            className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
+                              isFinal || isOverBudget
+                                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                            }`}
+                          >
+                            Approve
+                          </button>
+
+                          <button
+                            disabled={isFinal}
+                            onClick={() => rejectRecruitment(project._id)}
+                            className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
+                              isFinal
+                                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                : "bg-red-500 hover:bg-red-600 text-white"
+                            }`}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

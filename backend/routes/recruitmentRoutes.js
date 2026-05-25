@@ -23,10 +23,10 @@ router.post("/generate-approval-letter", generateApprovalLetter);
 
 router.post(
   "/create-advertisement",
+  auth(["PI"]),
   upload.single("attachment"),
   createRecruitmentAdvertisement,
 );
-
 // PI can view own requests
 
 router.get("/my-requests", auth(["PI"]), getMyRequests);

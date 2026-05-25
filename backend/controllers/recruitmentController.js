@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import puppeteer from "puppeteer";
 import { fileURLToPath } from "url";
+import CodeCreation from "../models/codeCreation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -549,13 +550,50 @@ const createRecruitmentAdvertisement = async (req, res) => {
 
 const getAllRecruitments = async (req, res) => {
   try {
+    // ======================================
+    // FETCH ALL RECRUITMENTS
+    // ======================================
+
     const recruitments = await Recruitment.find().sort({
       createdAt: -1,
     });
 
+    // ======================================
+    // ENRICH WITH LIVE FUND DATA
+    // ======================================
+
+    const updatedRecruitments = await Promise.all(
+      recruitments.map(async (recruitment) => {
+        // Find actual project
+
+        const project = await CodeCreation.findOne({
+          projectCode: recruitment.projectCode,
+        });
+
+        // Live fund balance from CodeCreation
+
+        const liveFundAmount =
+          project?.piSubmissions?.divisionHeads?.[recruitment.fundHead] || 0;
+
+        return {
+          ...recruitment.toObject(),
+
+          // overwrite stale value with live value
+
+          fundHeadAmount: liveFundAmount,
+
+          remainingFund: liveFundAmount - (recruitment.requestedAmount || 0),
+        };
+      }),
+    );
+
+    // ======================================
+    // RESPONSE
+    // ======================================
+
     res.status(200).json({
       success: true,
-      recruitments,
+      recruitments: updatedRecruitments,
     });
   } catch (error) {
     console.log(error);
@@ -566,24 +604,15 @@ const getAllRecruitments = async (req, res) => {
     });
   }
 };
-
 const approveRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const recruitment = await Recruitment.findByIdAndUpdate(
-      id,
-      {
-        status: "Approved",
+    // ======================================
+    // FIND RECRUITMENT
+    // ======================================
 
-        approvedAt: new Date(),
-
-        approvedBy: "Dean",
-      },
-      {
-        new: true,
-      },
-    );
+    const recruitment = await Recruitment.findById(id);
 
     if (!recruitment) {
       return res.status(404).json({
@@ -592,9 +621,82 @@ const approveRecruitment = async (req, res) => {
       });
     }
 
+    // ======================================
+    // PREVENT DOUBLE APPROVAL
+    // ======================================
+
+    if (recruitment.status === "Approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Recruitment already approved",
+      });
+    }
+
+    // ======================================
+    // FIND PROJECT
+    // ======================================
+
+    const project = await CodeCreation.findOne({
+      projectCode: recruitment.projectCode,
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    // ======================================
+    // FUND DETAILS
+    // ======================================
+
+    const fundHead = recruitment.fundHead;
+
+    const requestedAmount = Number(recruitment.requestedAmount) || 0;
+
+    const currentFund = project.piSubmissions?.divisionHeads?.[fundHead] || 0;
+
+    // ======================================
+    // INSUFFICIENT FUND CHECK
+    // ======================================
+
+    if (requestedAmount > currentFund) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient funds available",
+      });
+    }
+
+    // ======================================
+    // DEDUCT FUND
+    // ======================================
+
+    project.piSubmissions.divisionHeads[fundHead] =
+      currentFund - requestedAmount;
+
+    await project.save();
+
+    // ======================================
+    // APPROVE RECRUITMENT
+    // ======================================
+
+    recruitment.status = "Approved";
+
+    recruitment.approvedAt = new Date();
+
+    recruitment.approvedBy = "Dean";
+
+    await recruitment.save();
+
+    // ======================================
+    // RESPONSE
+    // ======================================
+
     res.status(200).json({
       success: true,
-      message: "Recruitment Approved",
+      message: "Recruitment Approved & Fund Deducted",
+      remainingFund: project.piSubmissions.divisionHeads[fundHead],
       recruitment,
     });
   } catch (error) {
@@ -606,7 +708,6 @@ const approveRecruitment = async (req, res) => {
     });
   }
 };
-
 const rejectRecruitment = async (req, res) => {
   try {
     const { id } = req.params;

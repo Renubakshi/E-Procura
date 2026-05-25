@@ -268,13 +268,14 @@ export default function ManpowerHiringForms({
       // RECRUITMENT PDF
       // =========================
 
+      const token = localStorage.getItem("token");
       const res = await fetch(
         "http://localhost:5000/api/recruitment/create-advertisement",
         {
           method: "POST",
-          // headers: {
-          //   "Content-Type": "application/json",
-          // },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: sendData,
         },
       );

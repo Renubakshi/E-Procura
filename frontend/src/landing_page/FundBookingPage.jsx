@@ -76,84 +76,40 @@ export default function FundBookingPage() {
       value: "event_expense",
     },
   ];
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const token = localStorage.getItem("token");
 
-        const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const fetchProject = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-        if (!res.ok) {
-          alert("Unable to fetch project");
-          return;
-        }
+      const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const data = await res.json();
-        console.log("code creation data", data);
-
-        setProjectData(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+      if (!res.ok) {
+        alert("Unable to fetch project");
+        return;
       }
-    };
+
+      const data = await res.json();
+      console.log("code creation data", data);
+
+      setProjectData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (id) fetchProject();
   }, [id]);
 
   if (loading) return <p className="p-10 text-gray-700">Loading...</p>;
   if (!projectData)
     return <p className="p-10 text-gray-700">No project found</p>;
-
-  // const handleSubmit = async () => {
-  //   try {
-  //     if (!selectedHead) {
-  //       alert("Please select a fund head");
-  //       return;
-  //     }
-
-  //     if (!process) {
-  //       alert("Please select a process");
-  //       return;
-  //     }
-  //     setLoadingSubmit(true);
-
-  // const token = localStorage.getItem("token");
-
-  //     const res = await fetch("http://localhost:5000/api/fund-booking", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-
-  //       body: JSON.stringify({
-  //         projectId: project._id,
-  //         head: selectedHead,
-  //         positions: cleanPositions,
-  //         process: process,
-  //         requestedAmount,
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-  //     console.log("submit ka", data);
-
-  //     if (res.ok) {
-  //       alert("Sent to Dean 🚀");
-  //     } else {
-  //       alert(data.message);
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   } finally {
-  //     setLoadingSubmit(false);
-  //   }
-  // };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -188,7 +144,11 @@ export default function FundBookingPage() {
             {Object.entries(projectData.piSubmissions?.divisionHeads || {}).map(
               ([key, value]) => (
                 <option key={key} value={key}>
-                  {key} (₹{value})
+                  {key} ( ₹
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}
+                  )
                 </option>
               ),
             )}
@@ -197,7 +157,11 @@ export default function FundBookingPage() {
           {selectedHead && (
             <p className="mt-2 text-sm text-gray-600">
               Available Fund: ₹
-              {projectData.piSubmissions?.divisionHeads[selectedHead]}
+              {projectData.piSubmissions?.divisionHeads[
+                selectedHead
+              ]?.toLocaleString(undefined, {
+                maximumFractionDigits: 1,
+              })}
             </p>
           )}
         </div>
@@ -234,6 +198,7 @@ export default function FundBookingPage() {
               selectedHeadAmount={
                 projectData.piSubmissions?.divisionHeads[selectedHead]
               }
+              refreshProject={fetchProject}
             />
           </div>
         )}

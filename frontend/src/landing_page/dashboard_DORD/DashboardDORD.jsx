@@ -484,15 +484,15 @@ function DashboardDORDPreview() {
                 </th>
 
                 <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                  Available Fund
+                  Current Balance
                 </th>
 
                 <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                  Requested Fund
+                  Requested Amount
                 </th>
 
                 <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
-                  Remaining Fund
+                  Balance After Approval
                 </th>
 
                 <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
@@ -508,6 +508,10 @@ function DashboardDORDPreview() {
                 </th>
 
                 <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
+                  Approval Letter
+                </th>
+
+                <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                   Actions
                 </th>
               </tr>
@@ -520,13 +524,13 @@ function DashboardDORDPreview() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="11" className="text-center p-10 text-gray-500">
+                  <td colSpan="12" className="text-center p-10 text-gray-500">
                     Loading recruitment requests...
                   </td>
                 </tr>
               ) : filteredProjects.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="text-center p-10 text-gray-500">
+                  <td colSpan="12" className="text-center p-10 text-gray-500">
                     No recruitment requests found
                   </td>
                 </tr>
@@ -536,12 +540,12 @@ function DashboardDORDPreview() {
                     project.status === "Approved" ||
                     project.status === "Rejected";
 
-                  const remainingFund =
-                    (project.fundHeadAmount || 0) -
-                    (project.requestedAmount || 0);
-
-                  const isOverBudget =
-                    project.requestedAmount > project.fundHeadAmount;
+                  const currentBalance =
+                    project.status === "Pending"
+                      ? (project.fundHeadAmount || 0) +
+                        (project.requestedAmount || 0)
+                      : project.fundHeadAmount || 0;
+                  const remainingFund = project.fundHeadAmount || 0;
 
                   return (
                     <tr
@@ -576,40 +580,36 @@ function DashboardDORDPreview() {
                         </div>
                       </td>
 
-                      {/* AVAILABLE FUND */}
+                      {/* Current Balance */}
 
                       <td className="px-6 py-6">
                         <div className="font-semibold text-blue-700 bg-blue-50 px-3 py-2 rounded-xl inline-block">
-                          ₹{project.fundHeadAmount?.toLocaleString() || 0}
+                          ₹
+                          {currentBalance?.toLocaleString(undefined, {
+                            maximumFractionDigits: 1,
+                          }) || 0}
                         </div>
                       </td>
 
-                      {/* REQUESTED FUND */}
+                      {/* REQUESTED Amount */}
 
                       <td className="px-6 py-6">
                         <div className="font-semibold text-orange-600 bg-orange-50 px-3 py-2 rounded-xl inline-block">
-                          ₹{project.requestedAmount?.toLocaleString() || 0}
+                          ₹
+                          {project.requestedAmount?.toLocaleString(undefined, {
+                            maximumFractionDigits: 1,
+                          }) || 0}
                         </div>
                       </td>
 
-                      {/* REMAINING FUND */}
-
+                      {/* Balance After Approval */}
                       <td className="px-6 py-6">
-                        <div
-                          className={`font-bold px-3 py-2 rounded-xl inline-block ${
-                            isOverBudget
-                              ? "bg-red-50 text-red-600"
-                              : "bg-green-50 text-green-700"
-                          }`}
-                        >
-                          ₹{remainingFund.toLocaleString()}
+                        <div className="font-bold px-3 py-2 rounded-xl inline-block bg-green-50 text-green-700">
+                          ₹
+                          {remainingFund.toLocaleString(undefined, {
+                            maximumFractionDigits: 1,
+                          })}
                         </div>
-
-                        {isOverBudget && (
-                          <p className="text-xs text-red-500 mt-2 font-medium">
-                            Budget Exceeded
-                          </p>
-                        )}
                       </td>
 
                       {/* DEPARTMENT */}
@@ -643,15 +643,39 @@ function DashboardDORDPreview() {
                         </button>
                       </td>
 
+                      {/* APPROVAL LETTER PDF */}
+
+                      <td className="px-6 py-6 text-center">
+                        {project.approvalLetterPath ? (
+                          <button
+                            onClick={() =>
+                              viewPDF(
+                                project.approvalLetterPath.replace(
+                                  "/generated-pdfs/",
+                                  "",
+                                ),
+                              )
+                            }
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
+                          >
+                            View Letter
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-sm">
+                            Not Available
+                          </span>
+                        )}
+                      </td>
+
                       {/* ACTIONS */}
 
                       <td className="px-6 py-6 text-center">
                         <div className="flex flex-col gap-2 items-center">
                           <button
-                            disabled={isFinal || isOverBudget}
+                            disabled={isFinal}
                             onClick={() => approveRecruitment(project._id)}
                             className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
-                              isFinal || isOverBudget
+                              isFinal
                                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                                 : "bg-emerald-500 hover:bg-emerald-600 text-white"
                             }`}

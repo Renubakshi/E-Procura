@@ -7,9 +7,11 @@ export default function ManpowerHiringForms({
   process,
   selectedHead,
   selectedHeadAmount,
+  refreshProject,
 }) {
   const navigate = useNavigate();
   const [adPdf, setAdPdf] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     projectTitle: "",
     projectCode: "",
@@ -82,19 +84,18 @@ export default function ManpowerHiringForms({
     let total = 0;
 
     formData.positions.forEach((position) => {
-      const posts = Number(position.numberOfPosts) || 0;
+      const posts = Math.abs(Number(position.numberOfPosts) || 0);
 
-      const salary = Number(position.salaryEnd) || 0;
+      const salary = Math.abs(Number(position.salaryEnd) || 0);
 
       // duration months extract
-      const months = getDurationInMonths(position.duration) || 0;
+      const months = Math.abs(getDurationInMonths(position.duration) || 0);
 
       total += posts * salary * months;
     });
 
-    return total;
+    return Math.abs(total);
   };
-  const isBudgetExceeded = calculateTotalManpowerCost() > selectedHeadAmount;
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -248,7 +249,67 @@ export default function ManpowerHiringForms({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (submitting) return;
+
+    setSubmitting(true);
+
     try {
+      if (formData.interviewDate && formData.submissionDeadline) {
+        const interview = new Date(formData.interviewDate);
+
+        const submission = new Date(formData.submissionDeadline);
+
+        submission.setHours(0, 0, 0, 0);
+
+        if (interview < submission) {
+          alert("Interview date cannot be before submission deadline");
+          return;
+        }
+      }
+
+      for (const position of formData.positions) {
+        if (Number(position.salaryStart) > Number(position.salaryEnd)) {
+          alert("Salary start cannot be greater than salary end");
+          return;
+        }
+      }
+
+      for (const position of formData.positions) {
+        if (!position.positionName.trim()) {
+          alert("Position name is required");
+          return;
+        }
+
+        if (!position.numberOfPosts) {
+          alert("Number of posts is required");
+          return;
+        }
+
+        if (!position.salaryEnd) {
+          alert("Salary is required");
+          return;
+        }
+
+        if (!position.duration.trim()) {
+          alert("Duration is required");
+          return;
+        }
+      }
+
+      if (!formData.attachment) {
+        alert("Please upload application form PDF");
+        return;
+      }
+
+      const validCommitteeMembers = formData.committeeMembers.filter(
+        (member) => member.trim() !== "",
+      );
+
+      if (validCommitteeMembers.length === 0) {
+        alert("At least one committee member is required");
+        return;
+      }
+
       if (isBudgetExceeded) {
         alert("Requested manpower cost exceeds available budget");
         return;
@@ -331,20 +392,42 @@ export default function ManpowerHiringForms({
           "_blank",
         );
 
+        await fetch(
+          `http://localhost:5000/api/recruitment/${data.recruitment._id}/approval-letter`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              approvalLetterPath: `/generated-pdfs/${approvalData.pdf}`,
+            }),
+          },
+        );
+
         alert("✅ PDFs downloaded successfully & form submitted");
 
-        setTimeout(() => {
-          navigate("/pi-dashboard");
-        }, 3000);
+        await refreshProject();
+        navigate("/pi-dashboard");
       }
     } catch (err) {
       console.log(err);
       alert("Server Error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const inputClass =
     "w-full border border-gray-300 rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500";
+
+  const requestedAmount = calculateTotalManpowerCost();
+
+  const remainingBalance = selectedHeadAmount - requestedAmount;
+
+  const isBudgetExceeded = requestedAmount > selectedHeadAmount;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -527,13 +610,62 @@ export default function ManpowerHiringForms({
                 <input
                   type="text"
                   name="piWebsite"
-                  placeholder="Enter your Website name"
+                  placeholder="Enter PI Website url"
                   value={formData.piWebsite}
                   onChange={handleChange}
                   className={inputClass}
                 />
               </div>
             </div>
+          </div>
+
+          <div className="bg-gray-50 border rounded-2xl p-5 mb-6">
+            <h3 className="text-lg font-semibold mb-4">Fund Summary</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">Available Fund</p>
+
+                <p className="text-xl font-bold text-blue-600">
+                  ₹
+                  {selectedHeadAmount?.toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">Requested Amount</p>
+
+                <p className="text-xl font-bold text-orange-500">
+                  ₹
+                  {requestedAmount?.toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <p className="text-sm text-gray-500">Remaining Balance</p>
+
+                <p
+                  className={`text-xl font-bold ${
+                    remainingBalance < 0 ? "text-red-500" : "text-green-600"
+                  }`}
+                >
+                  ₹
+                  {remainingBalance?.toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {isBudgetExceeded && (
+              <p className="mt-4 text-red-500 font-medium">
+                Requested amount exceeds available fund balance
+              </p>
+            )}
           </div>
 
           <div>
@@ -605,6 +737,7 @@ export default function ManpowerHiringForms({
                     </p>
                     <input
                       type="number"
+                      min="1"
                       name="numberOfPosts"
                       placeholder="Enter Number of Posts"
                       value={position.numberOfPosts}
@@ -634,6 +767,7 @@ export default function ManpowerHiringForms({
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="number"
+                        min="0"
                         name="salaryStart"
                         placeholder="Start Range"
                         value={position.salaryStart || ""}
@@ -643,6 +777,7 @@ export default function ManpowerHiringForms({
 
                       <input
                         type="number"
+                        min="0"
                         name="salaryEnd"
                         placeholder="End Range"
                         value={position.salaryEnd || ""}
@@ -668,7 +803,7 @@ export default function ManpowerHiringForms({
 
                     <div className="flex flex-wrap gap-2 mt-2">
                       {[
-                        "89 Days (Extandable)",
+                        "89 Days (Extendable)",
                         "6 Months",
                         "12 Months",
                         "18 Months",
@@ -789,7 +924,7 @@ export default function ManpowerHiringForms({
                   type="email"
                   name="submissionEmail"
                   placeholder="Submission Email"
-                  value={formData.piEmail}
+                  value={formData.submissionEmail}
                   onChange={handleChange}
                   className={inputClass}
                 />
@@ -815,6 +950,7 @@ export default function ManpowerHiringForms({
                 </p>
                 <input
                   type="datetime-local"
+                  min={new Date().toISOString().slice(0, 16)}
                   name="submissionDeadline"
                   placeholder="Submission Deadline"
                   value={formData.submissionDeadline}
@@ -916,12 +1052,26 @@ export default function ManpowerHiringForms({
             <input
               type="file"
               accept=".pdf"
-              onChange={(e) =>
+              onChange={(e) => {
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                if (file.type !== "application/pdf") {
+                  alert("Only PDF files are allowed");
+                  return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                  alert("File size should be less than 5MB");
+                  return;
+                }
+
                 setFormData({
                   ...formData,
-                  attachment: e.target.files[0],
-                })
-              }
+                  attachment: file,
+                });
+              }}
               className="w-full mt-2 p-2 border rounded"
             />
           </div>
@@ -933,9 +1083,14 @@ export default function ManpowerHiringForms({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               type="submit"
-              className="bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl text-lg font-semibold"
+              disabled={submitting || isBudgetExceeded}
+              className={`py-3 rounded-xl text-lg font-semibold text-white transition ${
+                submitting || isBudgetExceeded
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-700 hover:bg-blue-800"
+              }`}
             >
-              Submit to Dean
+              {submitting ? "Submitting..." : "Submit to Dean"}
             </button>
             {adPdf && (
               <button

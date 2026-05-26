@@ -278,6 +278,7 @@ const createRecruitmentAdvertisement = async (req, res) => {
       fundHeadAmount: bodyData.fundHeadAmount,
       requestedAmount: bodyData.requestedAmount,
 
+      approvalLetterPath: bodyData.approvalLetterPath,
       submissionEmail: bodyData.submissionEmail,
       emailSubject: bodyData.emailSubject,
       submissionDeadline: bodyData.submissionDeadline,
@@ -290,6 +291,51 @@ const createRecruitmentAdvertisement = async (req, res) => {
       attachment: req.file?.path,
     };
     console.log("controller", bodyData);
+
+    // ======================================
+    // FIND PROJECT
+    // ======================================
+
+    const project = await CodeCreation.findOne({
+      projectCode: bodyData.projectCode,
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    // ======================================
+    // FUND DETAILS
+    // ======================================
+
+    const fundHead = bodyData.fundHead;
+
+    const requestedAmount = Number(bodyData.requestedAmount) || 0;
+
+    const currentFund = project.piSubmissions?.divisionHeads?.[fundHead] || 0;
+
+    // ======================================
+    // INSUFFICIENT FUND CHECK
+    // ======================================
+
+    if (requestedAmount > currentFund) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient available fund",
+      });
+    }
+
+    // ======================================
+    // BLOCK FUND
+    // ======================================
+
+    project.piSubmissions.divisionHeads[fundHead] =
+      currentFund - requestedAmount;
+
+    await project.save();
 
     const recruitment = await Recruitment.create(formattedData);
 
@@ -604,6 +650,7 @@ const getAllRecruitments = async (req, res) => {
     });
   }
 };
+
 const approveRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -633,6 +680,65 @@ const approveRecruitment = async (req, res) => {
     }
 
     // ======================================
+    // APPROVE RECRUITMENT
+    // ======================================
+
+    recruitment.status = "Approved";
+
+    recruitment.approvedAt = new Date();
+
+    recruitment.approvedBy = "Dean";
+
+    await recruitment.save();
+
+    // ======================================
+    // RESPONSE
+    // ======================================
+
+    res.status(200).json({
+      success: true,
+      message: "Recruitment Approved ",
+      recruitment,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const rejectRecruitment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ======================================
+    // FIND RECRUITMENT
+    // ======================================
+
+    const recruitment = await Recruitment.findById(id);
+
+    if (!recruitment) {
+      return res.status(404).json({
+        success: false,
+        message: "Recruitment not found",
+      });
+    }
+
+    // ======================================
+    // PREVENT DOUBLE REJECTION
+    // ======================================
+
+    if (recruitment.status === "Rejected") {
+      return res.status(400).json({
+        success: false,
+        message: "Recruitment already rejected",
+      });
+    }
+
+    // ======================================
     // FIND PROJECT
     // ======================================
 
@@ -655,37 +761,19 @@ const approveRecruitment = async (req, res) => {
 
     const requestedAmount = Number(recruitment.requestedAmount) || 0;
 
-    const currentFund = project.piSubmissions?.divisionHeads?.[fundHead] || 0;
-
     // ======================================
-    // INSUFFICIENT FUND CHECK
+    // REFUND BLOCKED FUND
     // ======================================
 
-    if (requestedAmount > currentFund) {
-      return res.status(400).json({
-        success: false,
-        message: "Insufficient funds available",
-      });
-    }
-
-    // ======================================
-    // DEDUCT FUND
-    // ======================================
-
-    project.piSubmissions.divisionHeads[fundHead] =
-      currentFund - requestedAmount;
+    project.piSubmissions.divisionHeads[fundHead] += requestedAmount;
 
     await project.save();
 
     // ======================================
-    // APPROVE RECRUITMENT
+    // UPDATE STATUS
     // ======================================
 
-    recruitment.status = "Approved";
-
-    recruitment.approvedAt = new Date();
-
-    recruitment.approvedBy = "Dean";
+    recruitment.status = "Rejected";
 
     await recruitment.save();
 
@@ -695,8 +783,7 @@ const approveRecruitment = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Recruitment Approved & Fund Deducted",
-      remainingFund: project.piSubmissions.divisionHeads[fundHead],
+      message: "Recruitment Rejected & Fund Released",
       recruitment,
     });
   } catch (error) {
@@ -708,42 +795,6 @@ const approveRecruitment = async (req, res) => {
     });
   }
 };
-const rejectRecruitment = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const recruitment = await Recruitment.findByIdAndUpdate(
-      id,
-      {
-        status: "Rejected",
-      },
-      {
-        new: true,
-      },
-    );
-
-    if (!recruitment) {
-      return res.status(404).json({
-        success: false,
-        message: "Recruitment not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Recruitment Rejected",
-      recruitment,
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
-
 // get fund request status
 const getMyRequests = async (req, res) => {
   try {

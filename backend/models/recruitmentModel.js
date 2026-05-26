@@ -189,6 +189,10 @@ const recruitmentSchema = new mongoose.Schema(
       type: String,
     },
 
+    approvalLetterPath: {
+      type: String,
+    },
+
     // ======================================
     // APPROVAL WORKFLOW
     // ======================================

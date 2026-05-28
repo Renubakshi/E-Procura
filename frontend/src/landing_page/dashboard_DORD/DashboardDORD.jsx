@@ -300,7 +300,7 @@ function DashboardDORDPreview() {
     try {
       setLoading(true);
 
-      const res = await axios.get("http://localhost:5000/api/recruitment");
+      const res = await axios.get("/api/recruitment");
 
       setProjects(res.data.recruitments);
 
@@ -324,7 +324,7 @@ function DashboardDORDPreview() {
 
       if (!confirmApprove) return;
 
-      await axios.put(`http://localhost:5000/api/recruitment/${id}/approve`);
+      await axios.put(`/api/recruitment/${id}/approve`);
 
       fetchRecruitments();
     } catch (error) {
@@ -342,7 +342,7 @@ function DashboardDORDPreview() {
 
       if (!confirmReject) return;
 
-      await axios.put(`http://localhost:5000/api/recruitment/${id}/reject`);
+      await axios.put(`/api/recruitment/${id}/reject`);
 
       fetchRecruitments();
     } catch (error) {
@@ -391,7 +391,7 @@ function DashboardDORDPreview() {
       return;
     }
 
-    window.open(`http://localhost:5000/generated-pdfs/${pdfName}`, "_blank");
+    window.open(`/generated-pdfs/${pdfName}`, "_blank");
   };
 
   // ======================================
@@ -399,14 +399,14 @@ function DashboardDORDPreview() {
   // ======================================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-4 sm:p-6 md:p-8">
       {/* ====================================== */}
       {/* HEADER */}
       {/* ====================================== */}
 
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 tracking-tight">
             Dean Recruitment Dashboard
           </h1>
 
@@ -415,10 +415,10 @@ function DashboardDORDPreview() {
           </p>
         </div>
 
-        <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-200">
+        <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-2xl shadow-sm border border-gray-200 w-full lg:w-auto">
           <p className="text-sm text-gray-500">Total Requests</p>
 
-          <h2 className="text-3xl font-bold text-blue-700">
+          <h2 className="text-2xl sm:text-3xl font-bold text-blue-700">
             {filteredProjects.length}
           </h2>
         </div>

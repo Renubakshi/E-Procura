@@ -94,7 +94,7 @@ export default function SignupPage() {
     if (!validate()) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/api/signup", form);
+      const res = await axios.post("/api/signup", form);
 
       if (res.data.success) {
         localStorage.setItem("signupEmail", form.email);
@@ -108,7 +108,7 @@ export default function SignupPage() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 bg-white/10 p-6 rounded-2xl backdrop-blur-md shadow border border-white/20"
+      className="space-y-3 bg-white/10 p-4 sm:p-6 rounded-2xl backdrop-blur-md shadow border border-white/20"
     >
       {error && <p className="text-red-500 bg-white/20 p-2 rounded">{error}</p>}
 

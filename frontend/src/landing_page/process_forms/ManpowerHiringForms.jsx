@@ -150,7 +150,7 @@ export default function ManpowerHiringForms({
       return;
     }
     window.open(
-      `http://localhost:5000/api/files/download-pdf/${fileName}`,
+      `/api/files/download-pdf/${fileName}`,
       "_blank",
     );
   };
@@ -331,7 +331,7 @@ export default function ManpowerHiringForms({
 
       const token = localStorage.getItem("token");
       const res = await fetch(
-        "http://localhost:5000/api/recruitment/create-advertisement",
+        "/api/recruitment/create-advertisement",
         {
           method: "POST",
           headers: {
@@ -353,7 +353,7 @@ export default function ManpowerHiringForms({
 
       // Recruitment PDF open
       window.open(
-        `http://localhost:5000/api/files/download-pdf/${data.pdf}`,
+        `/api/files/download-pdf/${data.pdf}`,
         "_blank",
       );
 
@@ -373,7 +373,7 @@ export default function ManpowerHiringForms({
       };
 
       const approvalRes = await fetch(
-        "http://localhost:5000/api/recruitment/generate-approval-letter",
+        "/api/recruitment/generate-approval-letter",
         {
           method: "POST",
           headers: {
@@ -388,12 +388,12 @@ export default function ManpowerHiringForms({
       if (approvalRes.ok) {
         // Approval PDF open
         window.open(
-          `http://localhost:5000/api/files/download-pdf/${approvalData.pdf}`,
+          `/api/files/download-pdf/${approvalData.pdf}`,
           "_blank",
         );
 
         await fetch(
-          `http://localhost:5000/api/recruitment/${data.recruitment._id}/approval-letter`,
+          `/api/recruitment/${data.recruitment._id}/approval-letter`,
           {
             method: "PUT",
 
@@ -430,9 +430,9 @@ export default function ManpowerHiringForms({
   const isBudgetExceeded = requestedAmount > selectedHeadAmount;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center ">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
+      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 md:p-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center ">
           Recruitment Staff Member Form
         </h1>
 
@@ -669,13 +669,13 @@ export default function ManpowerHiringForms({
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold">Positions</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 border-b pb-2">
+              <h2 className="text-lg sm:text-xl font-semibold">Positions</h2>
 
               <button
                 type="button"
                 onClick={addPosition}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
               >
                 + Add Position
               </button>
@@ -684,7 +684,7 @@ export default function ManpowerHiringForms({
             {formData.positions.map((position, positionIndex) => (
               <div
                 key={positionIndex}
-                className="border rounded-xl p-6 mb-8 bg-gray-50"
+                className="border rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 bg-gray-50"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -1022,13 +1022,13 @@ export default function ManpowerHiringForms({
           {/* ========================= */}
 
           <div>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold">Committee Members</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 border-b pb-2">
+              <h2 className="text-lg sm:text-xl font-semibold">Committee Members</h2>
 
               <button
                 type="button"
                 onClick={addCommitteeMember}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
               >
                 + Add Member
               </button>

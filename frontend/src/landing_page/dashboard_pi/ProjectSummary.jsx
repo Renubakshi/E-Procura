@@ -14,7 +14,7 @@ export default function ProjectSummary() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+        const res = await fetch(`/api/projects/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -47,7 +47,7 @@ export default function ProjectSummary() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:5000/api/files/${project._id}`,
+        `/api/files/${project._id}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       console.log("res", res);
@@ -71,17 +71,17 @@ export default function ProjectSummary() {
   };
 
   return (
-    <div className="min-h-screen bg-[#d6e3da] p-10">
+    <div className="min-h-screen bg-[#d6e3da] p-4 sm:p-6 md:p-10">
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">Project Summary</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">Project Summary</h1>
         <div className="flex justify-end m-4">
           <BackButton />
         </div>
       </div>
 
       {/* BASIC INFO */}
-      <div className="bg-white rounded-2xl shadow p-8 mb-8">
+      <div className="bg-white rounded-2xl shadow p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">
           Basic Information
         </h2>
@@ -122,7 +122,7 @@ export default function ProjectSummary() {
       </div>
 
       {/* DIVISION HEADS */}
-      <div className="bg-white rounded-2xl shadow p-8 mb-8">
+      <div className="bg-white rounded-2xl shadow p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">
           Head-wise Fund Allocation
         </h2>
@@ -148,7 +148,7 @@ export default function ProjectSummary() {
           Attached Document
         </h3>
 
-        <div className="flex items-center justify-between bg-gray-100 p-4 rounded-lg border">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-100 p-4 rounded-lg border">
           <div>
             <p className="text-gray-700 font-medium">
               {project.attachmentOriginalName}

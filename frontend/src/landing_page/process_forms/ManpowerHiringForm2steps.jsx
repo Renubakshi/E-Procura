@@ -147,7 +147,7 @@ function StepBar({ step }) {
     "Review & Submit",
   ];
   return (
-    <div className="flex items-center justify-center gap-0 mb-8">
+    <div className="flex items-center justify-center gap-0 mb-6 sm:mb-8">
       {steps.map((label, i) => {
         const n = i + 1;
         const done = step > n;
@@ -156,13 +156,13 @@ function StepBar({ step }) {
           <div key={i} className="flex items-center">
             <div className="flex flex-col items-center gap-1">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold border-2 transition-all
                 ${done || active ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-300 text-gray-400"}`}
               >
                 {done ? "✓" : n}
               </div>
               <span
-                className={`text-xs font-medium text-center w-24 leading-tight
+                className={`text-[10px] sm:text-xs font-medium text-center w-16 sm:w-24 leading-tight
                 ${active ? "text-blue-600 font-bold" : "text-gray-400"}`}
               >
                 {label}
@@ -170,7 +170,7 @@ function StepBar({ step }) {
             </div>
             {i < steps.length - 1 && (
               <div
-                className={`w-16 h-0.5 mx-1 mb-4 transition-all ${step > n ? "bg-blue-600" : "bg-gray-200"}`}
+                className={`w-8 sm:w-16 h-0.5 mx-1 mb-4 transition-all ${step > n ? "bg-blue-600" : "bg-gray-200"}`}
               />
             )}
           </div>
@@ -319,7 +319,7 @@ export default function ManpowerHiringForm({
       };
 
       const res = await fetch(
-        "http://localhost:5000/api/recruitment/create-advertisement",
+        "/api/recruitment/create-advertisement",
         {
           method: "POST",
 
@@ -346,7 +346,7 @@ export default function ManpowerHiringForm({
   };
 
   return (
-    <div className="mt-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
       {/* Step bar */}
       <StepBar step={step} />
 
@@ -354,7 +354,7 @@ export default function ManpowerHiringForm({
       {step === 1 && (
         <div className="space-y-6">
           {/* Project Info */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Project Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Date of Request" required>
@@ -409,7 +409,7 @@ export default function ManpowerHiringForm({
           </div>
 
           {/* PI Info */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Principal Investigator</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Full Name" required>
@@ -469,7 +469,7 @@ export default function ManpowerHiringForm({
       {step === 2 && (
         <div className="space-y-6">
           {/* Position type */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Position Type</h3>
             <p className="text-sm text-gray-500 mb-3">
               Salary, age limit and email subject will auto-fill once you pick
@@ -496,7 +496,7 @@ export default function ManpowerHiringForm({
           </div>
 
           {/* Position details */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Position Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Number of Posts" required>
@@ -588,7 +588,7 @@ export default function ManpowerHiringForm({
           {/* Qualifications */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Essential */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
               <h3 className={sectionTitle}>Essential Qualifications</h3>
               {!posType ? (
                 <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
@@ -654,7 +654,7 @@ export default function ManpowerHiringForm({
             </div>
 
             {/* Desirable */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
               <h3 className={sectionTitle}>Desirable Qualifications</h3>
               <p className="text-xs text-gray-400 mb-3">
                 Select all that apply:
@@ -718,7 +718,7 @@ export default function ManpowerHiringForm({
       {step === 3 && (
         <div className="space-y-6">
           {/* Selection Committee */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Selection Committee</h3>
             <div className="space-y-2 mb-3">
               {committee.map((m, i) => (
@@ -757,7 +757,7 @@ export default function ManpowerHiringForm({
           </div>
 
           {/* Terms & Conditions */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Terms & Conditions</h3>
             <p className="text-xs text-gray-400 mb-4">
               These terms are mandatory and will be included in the hiring
@@ -804,7 +804,7 @@ export default function ManpowerHiringForm({
           </div>
 
           {/* Application Form Upload */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Application Form</h3>
             <p className="text-sm text-gray-500 mb-4">
               Upload the application form template that candidates will fill and
@@ -845,7 +845,7 @@ export default function ManpowerHiringForm({
           </div>
 
           {/* Summary */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className={sectionTitle}>Summary — verify before generating</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
               {[

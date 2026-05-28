@@ -89,7 +89,7 @@ useEffect(() => {
 
 const fetchProject = async () => {
   try {
-    const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+    const res = await fetch(`/api/projects/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -170,7 +170,7 @@ const fetchProject = async () => {
 
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+  const res = await fetch(`/api/projects/${id}`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -187,12 +187,12 @@ const fetchProject = async () => {
 }
 }
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-tr from-gray-100 to-gray-50">
-      <div className="glass-card w-full max-w-4xl p-8 shadow-lg fade-in">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-tr from-gray-100 to-gray-50">
+      <div className="glass-card w-full max-w-4xl p-4 sm:p-6 md:p-8 shadow-lg fade-in">
         <div className="flex justify-end m-4">
           <BackButton/>
         </div>
-        <h2 className="text-3xl font-bold text-primary text-center mb-6">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary text-center mb-6">
           Project Bifurcation Form
         </h2>
 

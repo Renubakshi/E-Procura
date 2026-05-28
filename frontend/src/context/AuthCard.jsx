@@ -6,7 +6,7 @@ export default function AuthCard() {
   const [tab, setTab] = useState("signup");
 
   return (
-    <div className="bg-white/25 backdrop-blur-xl shadow-xl rounded-2xl p-6 w-[380px] max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div className="bg-white/25 backdrop-blur-xl shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-[380px] max-h-[90vh] overflow-y-auto no-scrollbar">
       {/* Tabs */}
       <div className="flex mb-4 bg-white/20 p-1 rounded-xl">
         <button

@@ -55,7 +55,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const res = await axios.post("http://localhost:5000/api/login", form);
+      const res = await axios.post("/api/login", form);
 
       // ✅ Save token
       localStorage.setItem("token", res.data.token);
@@ -77,7 +77,7 @@ export default function LoginPage() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 bg-white/10 p-6 rounded-2xl backdrop-blur-md shadow border border-white/20"
+      className="space-y-3 bg-white/10 p-4 sm:p-6 rounded-2xl backdrop-blur-md shadow border border-white/20"
     >
       {error && <p className="text-red-400 bg-white/20 p-2 rounded">{error}</p>}
 

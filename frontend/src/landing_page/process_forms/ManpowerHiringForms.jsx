@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
+import {
+  readPem,
+  importPrivateKey,
+  signData,
+  canonicalPayload,
+} from "../../utils/digitalSignature";
 
 export default function ManpowerHiringForms({
   projectData,
@@ -51,6 +56,7 @@ export default function ManpowerHiringForms({
 
     committeeMembers: [""],
     attachment: null,
+    privateKeyFile: null,
   });
   console.log("head", selectedHead);
   console.log("process", process);
@@ -223,6 +229,13 @@ export default function ManpowerHiringForms({
     });
   };
 
+  const handleKeyFileChange = (e) => {
+    setFormData({
+      ...formData,
+      privateKeyFile: e.target.files[0],
+    });
+  };
+
   // =========================
   // COMMITTEE MEMBERS
   // =========================
@@ -268,13 +281,6 @@ export default function ManpowerHiringForms({
       }
 
       for (const position of formData.positions) {
-        if (Number(position.salaryStart) > Number(position.salaryEnd)) {
-          alert("Salary start cannot be greater than salary end");
-          return;
-        }
-      }
-
-      for (const position of formData.positions) {
         if (!position.positionName.trim()) {
           alert("Position name is required");
           return;
@@ -314,14 +320,39 @@ export default function ManpowerHiringForms({
         alert("Requested manpower cost exceeds available budget");
         return;
       }
+
+      if (!formData.privateKeyFile) {
+        alert("Please upload private key");
+        return;
+      }
+
+      // =========================
+      // CREATE DIGITAL SIGNATURE
+      // =========================
+
+      const payload = canonicalPayload({
+        ...formData,
+        // file object remove
+        attachment: undefined,
+        privateKeyFile: undefined,
+      });
+
+      const pem = await readPem(formData.privateKeyFile);
+
+      const privateKey = await importPrivateKey(pem);
+
+      const signature = await signData(privateKey, payload);
       // =========================
       // CREATE FORMDATA
       // =========================
 
       const sendData = new FormData();
 
-      // pura formData object
       sendData.append("data", JSON.stringify(formData));
+
+      sendData.append("payload", JSON.stringify(payload));
+
+      sendData.append("signature", signature);
 
       // uploaded pdf file
       sendData.append("attachment", formData.attachment);
@@ -497,7 +528,9 @@ export default function ManpowerHiringForms({
                   placeholder="Enter Sponsoring Agency"
                   className={inputClass}
                 />
-
+                <p className="text-xs text-gray-500 mt-2 mb-1">
+                  Suggested Agencies
+                </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {[
                     "MeitY",
@@ -520,7 +553,7 @@ export default function ManpowerHiringForms({
                           sponsoringAgency: agency,
                         })
                       }
-                      className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
+                      className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full transition"
                     >
                       {agency}
                     </button>
@@ -557,6 +590,7 @@ export default function ManpowerHiringForms({
                 <input
                   type="text"
                   name="piDesignation"
+                  required
                   placeholder="e.g. Associate Professor"
                   value={formData.piDesignation}
                   onChange={handleChange}
@@ -619,6 +653,258 @@ export default function ManpowerHiringForms({
             </div>
           </div>
 
+          <div>
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+              <h2 className="text-xl font-semibold">Positions</h2>
+
+              <button
+                type="button"
+                onClick={addPosition}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                + Add Position
+              </button>
+            </div>
+
+            {formData.positions.map((position, positionIndex) => (
+              <div
+                key={positionIndex}
+                className="border rounded-xl p-6 mb-8 bg-gray-50"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Enter position Name
+                    </p>
+                    <input
+                      type="text"
+                      name="positionName"
+                      placeholder="Enter Position Name"
+                      value={position.positionName}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                    <p className="text-xs text-gray-500 mt-2 mb-1">
+                      Suggested Positions
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {[
+                        "Junior Research Fellow (JRF)",
+                        "Senior Research Fellow (SRF)",
+                        "Project Associate",
+                        "Project Assistant",
+                        "Project Manager",
+                        "Project Engineer",
+                        "Intern",
+                      ].map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => {
+                            const updated = [...formData.positions];
+
+                            updated[positionIndex].positionName = item;
+
+                            setFormData({
+                              ...formData,
+                              positions: updated,
+                            });
+                          }}
+                          className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full transition"
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Number of posts
+                    </p>
+                    <input
+                      type="number"
+                      min="1"
+                      name="numberOfPosts"
+                      placeholder="Enter Number of Posts"
+                      value={position.numberOfPosts}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Age Limit
+                    </p>
+                    <input
+                      type="text"
+                      name="ageLimit"
+                      placeholder="Enter Age Limit"
+                      required
+                      value={position.ageLimit}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Enter Salary Range
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="number"
+                        min="0"
+                        name="salaryStart"
+                        placeholder="Start Range"
+                        value={position.salaryStart || ""}
+                        onChange={(e) => handlePositionChange(positionIndex, e)}
+                        className={inputClass}
+                      />
+
+                      <input
+                        type="number"
+                        min="0"
+                        name="salaryEnd"
+                        placeholder="End Range"
+                        value={position.salaryEnd || ""}
+                        onChange={(e) => handlePositionChange(positionIndex, e)}
+                        className={inputClass}
+                      />
+                    </div>
+                    {position.salaryStart &&
+                      position.salaryEnd &&
+                      Number(position.salaryStart) >
+                        Number(position.salaryEnd) && (
+                        <p className="text-red-600 text-sm mt-2">
+                          Minimum salary cannot be greater than maximum salary
+                        </p>
+                      )}
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-1 text-gray-700">
+                      Duration
+                    </p>
+
+                    <input
+                      type="text"
+                      name="duration"
+                      placeholder="Enter Duration"
+                      value={position.duration}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                    <p className="text-xs text-gray-500 mt-2 mb-1">
+                      Suggested Duration
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {[
+                        "89 Days (Extendable)",
+                        "6 Months",
+                        "12 Months",
+                        "18 Months",
+                        "24 Months",
+                      ].map((duration) => (
+                        <button
+                          key={duration}
+                          type="button"
+                          onClick={() => {
+                            const updated = [...formData.positions];
+
+                            updated[positionIndex].duration = duration;
+
+                            setFormData({
+                              ...formData,
+                              positions: updated,
+                            });
+                          }}
+                          className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full transition"
+                        >
+                          {duration}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ESSENTIAL QUALIFICATIONS */}
+
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2">
+                    Essential Qualifications
+                  </h3>
+
+                  {position.essentialQualifications.map((item, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={item}
+                      required
+                      placeholder="Essential Qualification"
+                      onChange={(e) =>
+                        handleArrayChange(
+                          positionIndex,
+                          "essentialQualifications",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      className={inputClass + " mb-2"}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addArrayField(positionIndex, "essentialQualifications")
+                    }
+                    className="text-blue-600 text-sm"
+                  >
+                    + Add Essential Qualification
+                  </button>
+                </div>
+
+                {/* DESIRABLE QUALIFICATIONS */}
+
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2">
+                    Desirable Qualifications
+                  </h3>
+
+                  {position.desirableQualifications.map((item, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      required
+                      value={item}
+                      placeholder="Desirable Qualification"
+                      onChange={(e) =>
+                        handleArrayChange(
+                          positionIndex,
+                          "desirableQualifications",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      className={inputClass + " mb-2"}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addArrayField(positionIndex, "desirableQualifications")
+                    }
+                    className="text-blue-600 text-sm"
+                  >
+                    + Add Desirable Qualification
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="bg-gray-50 border rounded-2xl p-5 mb-6">
             <h3 className="text-lg font-semibold mb-4">Fund Summary</h3>
 
@@ -668,244 +954,6 @@ export default function ManpowerHiringForms({
             )}
           </div>
 
-          <div>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold">Positions</h2>
-
-              <button
-                type="button"
-                onClick={addPosition}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-              >
-                + Add Position
-              </button>
-            </div>
-
-            {formData.positions.map((position, positionIndex) => (
-              <div
-                key={positionIndex}
-                className="border rounded-xl p-6 mb-8 bg-gray-50"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium mb-0.5 text-gray-700">
-                      Enter position Name
-                    </p>
-                    <input
-                      type="text"
-                      name="positionName"
-                      placeholder="Enter Position Name"
-                      value={position.positionName}
-                      onChange={(e) => handlePositionChange(positionIndex, e)}
-                      className={inputClass}
-                    />
-
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {[
-                        "Junior Research Fellow (JRF)",
-                        "Senior Research Fellow (SRF)",
-                        "Project Associate",
-                        "Project Assistant",
-                        "Project Manager",
-                        "Project Engineer",
-                        "Intern",
-                      ].map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.positions];
-
-                            updated[positionIndex].positionName = item;
-
-                            setFormData({
-                              ...formData,
-                              positions: updated,
-                            });
-                          }}
-                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium mb-0.5 text-gray-700">
-                      Number of posts
-                    </p>
-                    <input
-                      type="number"
-                      min="1"
-                      name="numberOfPosts"
-                      placeholder="Enter Number of Posts"
-                      value={position.numberOfPosts}
-                      onChange={(e) => handlePositionChange(positionIndex, e)}
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium mb-0.5 text-gray-700">
-                      Age Limit
-                    </p>
-                    <input
-                      type="text"
-                      name="ageLimit"
-                      placeholder="Enter Age Limit"
-                      value={position.ageLimit}
-                      onChange={(e) => handlePositionChange(positionIndex, e)}
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium mb-0.5 text-gray-700">
-                      Enter Salary Range
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="number"
-                        min="0"
-                        name="salaryStart"
-                        placeholder="Start Range"
-                        value={position.salaryStart || ""}
-                        onChange={(e) => handlePositionChange(positionIndex, e)}
-                        className={inputClass}
-                      />
-
-                      <input
-                        type="number"
-                        min="0"
-                        name="salaryEnd"
-                        placeholder="End Range"
-                        value={position.salaryEnd || ""}
-                        onChange={(e) => handlePositionChange(positionIndex, e)}
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium mb-1 text-gray-700">
-                      Duration
-                    </p>
-
-                    <input
-                      type="text"
-                      name="duration"
-                      placeholder="Enter Duration"
-                      value={position.duration}
-                      onChange={(e) => handlePositionChange(positionIndex, e)}
-                      className={inputClass}
-                    />
-
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {[
-                        "89 Days (Extendable)",
-                        "6 Months",
-                        "12 Months",
-                        "18 Months",
-                        "24 Months",
-                      ].map((duration) => (
-                        <button
-                          key={duration}
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.positions];
-
-                            updated[positionIndex].duration = duration;
-
-                            setFormData({
-                              ...formData,
-                              positions: updated,
-                            });
-                          }}
-                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
-                        >
-                          {duration}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* ESSENTIAL QUALIFICATIONS */}
-
-                <div className="mt-6">
-                  <h3 className="font-semibold mb-2">
-                    Essential Qualifications
-                  </h3>
-
-                  {position.essentialQualifications.map((item, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      value={item}
-                      placeholder="Essential Qualification"
-                      onChange={(e) =>
-                        handleArrayChange(
-                          positionIndex,
-                          "essentialQualifications",
-                          index,
-                          e.target.value,
-                        )
-                      }
-                      className={inputClass + " mb-2"}
-                    />
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addArrayField(positionIndex, "essentialQualifications")
-                    }
-                    className="text-blue-600 text-sm"
-                  >
-                    + Add Essential Qualification
-                  </button>
-                </div>
-
-                {/* DESIRABLE QUALIFICATIONS */}
-
-                <div className="mt-6">
-                  <h3 className="font-semibold mb-2">
-                    Desirable Qualifications
-                  </h3>
-
-                  {position.desirableQualifications.map((item, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      value={item}
-                      placeholder="Desirable Qualification"
-                      onChange={(e) =>
-                        handleArrayChange(
-                          positionIndex,
-                          "desirableQualifications",
-                          index,
-                          e.target.value,
-                        )
-                      }
-                      className={inputClass + " mb-2"}
-                    />
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addArrayField(positionIndex, "desirableQualifications")
-                    }
-                    className="text-blue-600 text-sm"
-                  >
-                    + Add Desirable Qualification
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
           {/* ========================= */}
           {/* SUBMISSION DETAILS */}
           {/* ========================= */}
@@ -924,7 +972,7 @@ export default function ManpowerHiringForms({
                   type="email"
                   name="submissionEmail"
                   placeholder="Submission Email"
-                  value={formData.submissionEmail}
+                  value={formData.piEmail}
                   onChange={handleChange}
                   className={inputClass}
                 />
@@ -952,7 +1000,7 @@ export default function ManpowerHiringForms({
                   type="datetime-local"
                   min={new Date().toISOString().slice(0, 16)}
                   name="submissionDeadline"
-                  placeholder="Submission Deadline"
+                  onFocus={(e) => e.target.showPicker?.()}
                   value={formData.submissionDeadline}
                   onChange={handleChange}
                   className={inputClass}
@@ -961,12 +1009,12 @@ export default function ManpowerHiringForms({
 
               <div>
                 <p className="text-sm font-medium mb-1 text-gray-700">
-                  Submission Deadline
+                  Interview Date
                 </p>
                 <input
                   type="date"
                   name="interviewDate"
-                  placeholder="Interview Date"
+                  onFocus={(e) => e.target.showPicker?.()}
                   value={formData.interviewDate}
                   onChange={handleChange}
                   className={inputClass}
@@ -1008,7 +1056,7 @@ export default function ManpowerHiringForms({
                 <input
                   type="time"
                   name="reportingTime"
-                  placeholder="Reporting Time"
+                  onFocus={(e) => e.target.showPicker?.()}
                   value={formData.reportingTime}
                   onChange={handleChange}
                   className={inputClass}
@@ -1039,6 +1087,7 @@ export default function ManpowerHiringForms({
                 key={index}
                 type="text"
                 value={member}
+                required
                 placeholder="Committee Member Name"
                 onChange={(e) => handleCommitteeChange(index, e.target.value)}
                 className={inputClass + " mb-3"}
@@ -1052,6 +1101,7 @@ export default function ManpowerHiringForms({
             <input
               type="file"
               accept=".pdf"
+              required
               onChange={(e) => {
                 const file = e.target.files[0];
 
@@ -1076,15 +1126,32 @@ export default function ManpowerHiringForms({
             />
           </div>
 
-          {/* ========================= */}
-          {/* SUBMIT */}
-          {/* ========================= */}
+          {/* Private Key Upload */}
+          <div>
+            <label className="font-medium">
+              Upload Your Private Key (.pem)
+            </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="file"
+              accept=".pem"
+              required
+              onChange={handleKeyFileChange}
+              className="w-full mt-2 p-2 border rounded"
+            />
+
+            <p className="text-xs text-gray-500 mt-1">
+              Required for digital signature verification
+            </p>
+          </div>
+
+          {/* SUBMIT */}
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <button
               type="submit"
               disabled={submitting || isBudgetExceeded}
-              className={`py-3 rounded-xl text-lg font-semibold text-white transition ${
+              className={`btn-primary ${
                 submitting || isBudgetExceeded
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-700 hover:bg-blue-800"
@@ -1092,15 +1159,6 @@ export default function ManpowerHiringForms({
             >
               {submitting ? "Submitting..." : "Submit to Dean"}
             </button>
-            {adPdf && (
-              <button
-                type="button"
-                onClick={() => handleDownload(adPdf)}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl"
-              >
-                Download Recruitment Advertisement
-              </button>
-            )}
           </div>
         </form>
       </div>

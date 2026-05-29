@@ -12,7 +12,6 @@ import Footer from "./Footer";
 import AuthPageWrapper from "./components/AuthPageWrapper";
 import GenerateKey from "./landing_page/key_gen/GenerateKey";
 import ManpowerHiringForm from "./landing_page/process_forms/ManpowerHiringForms";
-import ManpowerHiringForm2 from "./landing_page/process_forms/ManpowerHiringForm2steps";
 import FundBifurcationList from "./landing_page/dashboard_pi/FundBifurcationList";
 import PIRequestsList from "./landing_page/dashboard_pi/PIRequestsList";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -67,7 +66,6 @@ function App() {
         <Route path="/projects" element={<FundBifurcationList />} />
         <Route path="/pi-fund-requests" element={<PIRequestsList />} />
         <Route path="/manpower-hiring" element={<ManpowerHiringForm />} />
-        <Route path="/manpower-hiring2" element={<ManpowerHiringForm2 />} />
         <Route path="/fund-booking/:id" element={<FundBookingPage />} />
       </Routes>
 

@@ -181,6 +181,10 @@ const recruitmentSchema = new mongoose.Schema(
       type: String,
     },
 
+    signaturePI: {
+      type:String,
+    },
+
     // ======================================
     // PDF DETAILS
     // ======================================
@@ -216,10 +220,25 @@ const recruitmentSchema = new mongoose.Schema(
     approvedBy: {
       type: String,
     },
+    deanDecision: {
+  action: {
+    type: String,
+    enum: ["APPROVED", "REJECTED"],
+  },
+  reason:String,
+  signedBy: String,
+
+  signatureDean: String,
+
+  payload: Object,
+
+  timestamp: Date,
+},
   },
   {
     timestamps: true,
   },
+  
 );
 
 const Recruitment = mongoose.model("Recruitment", recruitmentSchema);

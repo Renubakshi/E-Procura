@@ -1,49 +1,11 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
-
-//  helper functions
-function canonicalPayload(data) {
-  return JSON.stringify({
-    projectCode: data.projectCode,
-    department: data.department,
-    totalFundReceived: data.totalFundReceived,
-    bankTransactionId: data.bankTransactionId,
-    piEmpId: data.piEmpId,
-    piName: data.piName,
-  });
-}
-
-// import private key
-async function importPrivateKey(pem) {
-  const b64 = pem
-    .replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\s/g, "");
-
-  const binary = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-
-  return crypto.subtle.importKey(
-    "pkcs8",
-    binary.buffer,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256",
-    },
-    false,
-    ["sign"],
-  );
-}
-
-// sign payload
-async function signPayload(privateKeyPem, payload) {
-  const key = await importPrivateKey(privateKeyPem);
-
-  const encoded = new TextEncoder().encode(payload);
-
-  const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, encoded);
-
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
-}
+import {
+  readPem,
+  importPrivateKey,
+  signData,
+  canonicalPayload,
+} from "../../../src/utils/digitalSignature";
 
 // component
 export default function RndCodeCreationForm({ onClose }) {
@@ -164,11 +126,20 @@ export default function RndCodeCreationForm({ onClose }) {
 
     if (!validate()) return;
 
-    const privateKeyPem = await formData.privateKeyFile.text();
+    const payload = canonicalPayload({
+      projectCode: formData.projectCode,
+      department: formData.department,
+      totalFundReceived: formData.totalFundReceived,
+      bankTransactionId: formData.bankTransactionId,
+      piEmpId: formData.piEmpId,
+      piName: formData.piName,
+    });
 
-    const payload = canonicalPayload(formData);
+    const pem = await readPem(formData.privateKeyFile);
 
-    const signature = await signPayload(privateKeyPem, payload);
+    const privateKey = await importPrivateKey(pem);
+
+    const signature = await signData(privateKey, payload);
 
     const res = await fetch("http://localhost:5000/api/projects", {
       method: "POST",

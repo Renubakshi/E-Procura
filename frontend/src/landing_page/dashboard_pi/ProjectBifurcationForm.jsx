@@ -1,69 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import BackButton from "../../components/BackButton"
-
-
-async function readPem(file) {
-  const text = await file.text();
-  return text
-    .replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\s+/g, "");
-}
-
-async function importPrivateKey(pem) {
-  const binary = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
-
-  return await window.crypto.subtle.importKey(
-    "pkcs8",
-    binary.buffer,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256",
-    },
-    false,
-    ["sign"]
-  );
-}
-
-async function signData(privateKey, data) {
-  const enc = new TextEncoder().encode(JSON.stringify(data));
-
-  const signature = await window.crypto.subtle.sign(
-    "RSASSA-PKCS1-v1_5",
-    privateKey,
-    enc
-  );
-
-  return btoa(String.fromCharCode(...new Uint8Array(signature)));
-}
-
-async function hashPdf(file) {
-  const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
- 
-// for sorting all keys in payload
-function canonicalPayload(obj) {
-  if (obj === null || typeof obj !== "object") return obj;
-
-  if (Array.isArray(obj)) {
-    return obj.map(canonicalPayload);
-  }
-
-  const sortedKeys = Object.keys(obj).sort();
-  const result = {};
-
-  sortedKeys.forEach(key => {
-    result[key] = canonicalPayload(obj[key]);
-  });
-
-  return result;
-}
+import {readPem,
+        importPrivateKey,
+        signData,
+        hashPdf,
+        canonicalPayload
+} from "../../utils/digitalSignature"
 
 
 export default function ProjectBifurcationForm() {
@@ -135,6 +78,15 @@ const fetchProject = async () => {
     setFormData({ ...formData, privateKeyFile: e.target.files[0] });
   }
 
+  const totalAllocated = Object.values(formData.divisionHeads).reduce(
+  (sum, value) => sum + Number(value || 0),
+  0
+);
+
+const remainingAmount =
+  Number(formData.totalFundReceived || 0) - totalAllocated;
+
+const isExceeded = remainingAmount < 0;
   async function handleSubmit(e) {
   e.preventDefault();
 
@@ -178,12 +130,14 @@ const fetchProject = async () => {
     body: sendData,
   });
 
-  const text = await res.text();
+  const data = await res.json();
   if (res.ok) {
   alert("✅ Submitted");
   navigate("/pi-dashboard");
 } else {
-  alert(text);
+  console.log(data);
+  
+  alert(data.msg);
 }
 }
   return (
@@ -249,15 +203,71 @@ const fetchProject = async () => {
           </div>
 
           {/* Division Heads */}
-          <h3>Bifurcation of Fund</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Object.keys(formData.divisionHeads).map((head, i) => (
-              <div key={i}>
-                <label>{head}</label>
-                <input type="number" name={head} value={formData.divisionHeads[head]} onChange={handleChange} required className="w-full p-3 border rounded" />
-              </div>
-            ))}
-          </div>
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-5">
+    <h3 className="text-xl font-semibold text-gray-700">
+      Fund Bifurcation
+    </h3>
+
+    <div className="flex gap-4 mt-3 md:mt-0">
+      <div className="bg-blue-50 px-4 py-2 rounded-xl border">
+        <p className="text-xs text-gray-500">Allocated</p>
+        <p className="font-bold text-blue-700">
+          ₹ {totalAllocated.toLocaleString()}
+        </p>
+      </div>
+
+      <div
+        className={`px-4 py-2 rounded-xl border ${
+          isExceeded
+            ? "bg-red-50 border-red-200"
+            : "bg-green-50 border-green-200"
+        }`}
+      >
+        <p className="text-xs text-gray-500">Remaining</p>
+
+        <p
+          className={`font-bold ${
+            isExceeded ? "text-red-600" : "text-green-700"
+          }`}
+        >
+          ₹ {remainingAmount.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {isExceeded && (
+    <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 border border-red-300">
+      ⚠ Total bifurcation exceeds available funds
+    </div>
+  )}
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+    {Object.keys(formData.divisionHeads).map((head, i) => (
+      <div key={i} className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">
+          {head}
+        </label>
+
+        <input
+          type="number"
+          name={head}
+          value={formData.divisionHeads[head]}
+          onChange={handleChange}
+          required
+          placeholder="Enter amount"
+          className={`w-full p-3 rounded-xl border outline-none transition-all
+            ${
+              isExceeded
+                ? "border-red-300 focus:ring-2 focus:ring-red-300"
+                : "border-gray-300 focus:ring-2 focus:ring-blue-300"
+            }`}
+        />
+      </div>
+    ))}
+  </div>
+</div>
 
           {/* Attachment */}
           <div>
@@ -271,8 +281,8 @@ const fetchProject = async () => {
             <input type="file" accept=".pem" onChange={handleKeyFileChange} required className="w-full mt-2 p-2 border rounded" />
           </div>
 
-          <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded">
-            Submit & Sign
+          <button type="submit" className="btn-primary">
+            Sign & Submit
           </button>
         </form>
       </div>

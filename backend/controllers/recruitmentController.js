@@ -2,9 +2,11 @@ import Recruitment from "../models/recruitmentModel.js";
 import ejs from "ejs";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import puppeteer from "puppeteer";
 import { fileURLToPath } from "url";
 import CodeCreation from "../models/codeCreation.js";
+import User from "../models/user.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -252,6 +254,58 @@ const createRecruitmentAdvertisement = async (req, res) => {
     // SAVE DATA IN DATABASE
     // =========================
     const bodyData = JSON.parse(req.body.data);
+
+    // =========================
+// DIGITAL SIGNATURE VERIFY
+// =========================
+
+if (!req.body.payload) {
+  return res.status(400).json({
+    success: false,
+    message: "Payload missing",
+  });
+}
+
+if (!req.body.signature) {
+  return res.status(400).json({
+    success: false,
+    message: "Signature missing",
+  });
+}
+
+// Parse payload
+const parsedPayload = JSON.parse(req.body.payload);
+
+// Find PI user
+const user = await User.findOne({
+  email: req.user.email,
+});
+
+if (!user || !user.publicKey) {
+  return res.status(404).json({
+    success: false,
+    message: "Public key not found",
+  });
+}
+
+// Verify signature
+const verify = crypto.createVerify("RSA-SHA256");
+
+verify.update(req.body.payload);
+
+verify.end();
+
+const isValid = verify.verify(
+  user.publicKey,
+  Buffer.from(req.body.signature, "base64")
+);
+
+if (!isValid) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid private key uploaded. Signature verification failed",
+  });
+}
     const formattedData = {
       projectTitle: bodyData.projectTitle,
       projectCode: bodyData.projectCode,
@@ -289,6 +343,7 @@ const createRecruitmentAdvertisement = async (req, res) => {
       reportingTime: bodyData.reportingTime,
       committeeMembers: bodyData.committeeMembers,
       attachment: req.file?.path,
+      signaturePI:req.body.signature,
     };
     console.log("controller", bodyData);
 
@@ -655,6 +710,45 @@ const approveRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const { payload, signatureDean } = req.body;
+
+    // ======================================
+    // FIND DEAN
+    // ======================================
+
+    const deanUser = await User.findOne({
+      role: "DORD",
+    });
+
+    if (!deanUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Dean not found",
+      });
+    }
+
+    // ======================================
+    // VERIFY SIGNATURE
+    // ======================================
+
+    const verify = crypto.createVerify("RSA-SHA256");
+
+    verify.update(JSON.stringify(payload));
+
+    verify.end();
+
+    const isValid = verify.verify(
+      deanUser.publicKey,
+      Buffer.from(signatureDean, "base64"),
+    );
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid private key uploaded. Signature verification failed",
+      });
+    }
+
     // ======================================
     // FIND RECRUITMENT
     // ======================================
@@ -672,7 +766,7 @@ const approveRecruitment = async (req, res) => {
     // PREVENT DOUBLE APPROVAL
     // ======================================
 
-    if (recruitment.status === "Approved") {
+    if (recruitment.deanDecision?.action === "APPROVED") {
       return res.status(400).json({
         success: false,
         message: "Recruitment already approved",
@@ -680,7 +774,7 @@ const approveRecruitment = async (req, res) => {
     }
 
     // ======================================
-    // APPROVE RECRUITMENT
+    // UPDATE STATUS
     // ======================================
 
     recruitment.status = "Approved";
@@ -688,6 +782,14 @@ const approveRecruitment = async (req, res) => {
     recruitment.approvedAt = new Date();
 
     recruitment.approvedBy = "Dean";
+
+    recruitment.deanDecision = {
+      action: "APPROVED",
+      signedBy: "Dean",
+      signatureDean,
+      payload,
+      timestamp: new Date(),
+    };
 
     await recruitment.save();
 
@@ -697,11 +799,13 @@ const approveRecruitment = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Recruitment Approved ",
+      message: "Recruitment Approved",
       recruitment,
     });
   } catch (error) {
-    console.log(error);
+    alert(
+      error.response?.data?.message || "Wrong Private Key"
+    )
 
     res.status(500).json({
       success: false,
@@ -709,14 +813,50 @@ const approveRecruitment = async (req, res) => {
     });
   }
 };
-
 const rejectRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const { payload, signatureDean } = req.body;
+
     // ======================================
+    // FIND DEAN
+    // ======================================
+
+    const deanUser = await User.findOne({
+      role: "DORD",
+    });
+
+    if (!deanUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Dean not found",
+      });
+    }
+
+    // ======================================
+    // VERIFY SIGNATURE
+    // ======================================
+
+    const verify = crypto.createVerify("RSA-SHA256");
+
+    verify.update(JSON.stringify(payload));
+
+    verify.end();
+
+    const isValid = verify.verify(
+      deanUser.publicKey,
+      Buffer.from(signatureDean, "base64"),
+    );
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid private key uploaded. Signature verification failed",
+      });
+    }
+
     // FIND RECRUITMENT
-    // ======================================
 
     const recruitment = await Recruitment.findById(id);
 
@@ -731,7 +871,7 @@ const rejectRecruitment = async (req, res) => {
     // PREVENT DOUBLE REJECTION
     // ======================================
 
-    if (recruitment.status === "Rejected") {
+    if (recruitment.deanDecision?.action === "REJECTED") {
       return res.status(400).json({
         success: false,
         message: "Recruitment already rejected",
@@ -759,13 +899,15 @@ const rejectRecruitment = async (req, res) => {
 
     const fundHead = recruitment.fundHead;
 
-    const requestedAmount = Number(recruitment.requestedAmount) || 0;
+    const requestedAmount =
+      Number(recruitment.requestedAmount) || 0;
 
     // ======================================
     // REFUND BLOCKED FUND
     // ======================================
 
-    project.piSubmissions.divisionHeads[fundHead] += requestedAmount;
+    project.piSubmissions.divisionHeads[fundHead] +=
+      requestedAmount;
 
     await project.save();
 
@@ -774,6 +916,15 @@ const rejectRecruitment = async (req, res) => {
     // ======================================
 
     recruitment.status = "Rejected";
+
+    recruitment.deanDecision = {
+      action: "REJECTED",
+      reason: payload.reason,
+      signedBy: "Dean",
+      signatureDean,
+      payload,
+      timestamp: new Date(),
+    };
 
     await recruitment.save();
 
@@ -787,7 +938,10 @@ const rejectRecruitment = async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    console.log(error);
+    alert(
+    error.response?.data?.message ||
+    "Wrong Private Key"
+  );
 
     res.status(500).json({
       success: false,

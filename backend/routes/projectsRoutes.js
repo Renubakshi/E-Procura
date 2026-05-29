@@ -26,34 +26,6 @@ router.get("/:id", getProjectsById);
 router.patch("/:id", auth(["PI"]), upload.single("attachment"),updateProjectByPI);
 
 
-// // ================== SIGN PROJECT (PI) ==================
-// router.post("/:id/sign", async (req, res) => {
-//   try {
-//     const { signature, data } = req.body;
-
-//     // hash of data
-//     const formHash = crypto
-//       .createHash("sha256")
-//       .update(JSON.stringify(data))
-//       .digest("hex");
-
-//     const updated = await Project.findByIdAndUpdate(
-//       req.params.id,
-//       {
-//         signature,
-//         formHash,
-//         status: "Sent to R&D",
-//       },
-//       { new: true }
-//     );
-
-//     res.json(updated);
-//   } catch (err) {
-//     res.status(500).json({ message: "Error signing project" });
-//   }
-// });
-
-
 // // ================== RND: GET PROJECTS ==================
 // router.get("/rnd", async (req, res) => {
 //   try {

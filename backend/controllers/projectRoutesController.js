@@ -69,7 +69,7 @@ if (!piUser) {
 
     const verify = crypto.createVerify("RSA-SHA256"); //verify signature
 
-    verify.update(payload);
+verify.update(JSON.stringify(payload));
     verify.end();
 
     const isValid = verify.verify(
@@ -174,8 +174,6 @@ export const getProjectsById = async (req, res) => {
 // UPDATE PROJECT FORM (PI) - bifurcation
 export const updateProjectByPI = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-console.log("FILE:", req.file);
     if (!req.body.formData)
       return res.status(400).json({ msg: "formData missing" });
 
@@ -199,7 +197,6 @@ console.log("FILE:", req.file);
     // 🔐 Verify PI signature
     const verify = crypto.createVerify("RSA-SHA256");
     verify.update(JSON.stringify(parsedForm));
-    // verify.update(payloadPI)
     verify.end();
 
     const isValid = verify.verify(
@@ -208,7 +205,7 @@ console.log("FILE:", req.file);
     );
 
     if (!isValid) {
-      return res.status(400).json({ msg: "Signature verification failed" });
+      return res.status(400).json({ msg: "Invalid private key uploaded. Signature verification failed" });
     }
 
     // 📄 Hash uploaded PDF
@@ -241,7 +238,7 @@ console.log("FILE:", req.file);
   parsedForm.divisionHeads["Bootcamps/Events"] +
   parsedForm.divisionHeads["Overhead"];
 
-if (total > project.availableFunds) {
+if (total > project.totalFundReceived) {
   return res.status(400).json({ msg: "Exceeds available funds" });
 }
 

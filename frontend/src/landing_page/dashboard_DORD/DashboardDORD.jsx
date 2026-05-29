@@ -1,292 +1,22 @@
-// //--------------------DORD dashboard with (Dummy data)-----------------------
-
-// import { useState } from "react";
-
-// function DashboardDORDPreview() {
-//   const [projects, setProjects] = useState([
-//     {
-//       projectId: "CSE-101",
-//       title: "AI Research",
-//       piName: "Dr. Sharma",
-//       totalFund: 500000,
-//       status: "Approved by R&D", // Pending
-//     },
-//     {
-//       projectId: "ECE-202",
-//       title: "IoT System",
-//       piName: "Dr. Verma",
-//       totalFund: 300000,
-//       status: "Pending DORD Approval", // Pending
-//     },
-//     {
-//       projectId: "MECH-303",
-//       title: "Robotics Lab",
-//       piName: "Dr. Singh",
-//       totalFund: 800000,
-//       status: "Approved by DORD", // Approved
-//     },
-//     {
-//       projectId: "CIVIL-404",
-//       title: "Bridge Design",
-//       piName: "Dr. Patel",
-//       totalFund: 600000,
-//       status: "Rejected by DORD", // Rejected
-//     },
-//     {
-//       projectId: "ELEC-505",
-//       title: "Smart Grid",
-//       piName: "Dr. Rao",
-//       totalFund: 750000,
-//       status: "Fully Approved", // Approved
-//     },
-//     {
-//       projectId: "CSE-106",
-//       title: "Machine Learning Optimization",
-//       piName: "Dr. Mehta",
-//       totalFund: 450000,
-//       status: "Approved by R&D",
-//     },
-//     {
-//       projectId: "ECE-207",
-//       title: "Wireless Sensor Networks",
-//       piName: "Dr. Iyer",
-//       totalFund: 320000,
-//       status: "Pending DORD Approval",
-//     },
-//     {
-//       projectId: "MECH-308",
-//       title: "Thermal Engineering Study",
-//       piName: "Dr. Khan",
-//       totalFund: 700000,
-//       status: "Approved by DORD",
-//     },
-//     {
-//       projectId: "CIVIL-409",
-//       title: "Urban Infrastructure Design",
-//       piName: "Dr. Gupta",
-//       totalFund: 650000,
-//       status: "Rejected by DORD",
-//     },
-//     {
-//       projectId: "ELEC-510",
-//       title: "Power Electronics Lab",
-//       piName: "Dr. Nair",
-//       totalFund: 550000,
-//       status: "Fully Approved",
-//     },
-//     {
-//       projectId: "CSE-611",
-//       title: "Blockchain Security",
-//       piName: "Dr. Roy",
-//       totalFund: 480000,
-//       status: "Approved by R&D",
-//     },
-//     {
-//       projectId: "ECE-712",
-//       title: "Embedded Systems Design",
-//       piName: "Dr. Thomas",
-//       totalFund: 360000,
-//       status: "Pending DORD Approval",
-//     },
-//     {
-//       projectId: "MECH-813",
-//       title: "Automobile Innovation",
-//       piName: "Dr. Bansal",
-//       totalFund: 820000,
-//       status: "Approved by DORD",
-//     },
-//     {
-//       projectId: "CIVIL-914",
-//       title: "Earthquake Resistant Structures",
-//       piName: "Dr. Reddy",
-//       totalFund: 900000,
-//       status: "Fully Approved",
-//     },
-//     {
-//       projectId: "ELEC-1015",
-//       title: "Renewable Energy Systems",
-//       piName: "Dr. Chatterjee",
-//       totalFund: 770000,
-//       status: "Pending DORD Approval",
-//     },
-//   ]);
-
-//   const [filter, setFilter] = useState("All");
-//   const [search, setSearch] = useState("");
-
-//   // 🔥 Map backend → UI
-//   const getDisplayStatus = (status) => {
-//     if (status?.includes("DORD")) {
-//       if (status.includes("Approved")) return "Approved";
-//       if (status.includes("Rejected")) return "Rejected";
-//     }
-//     return "Pending";
-//   };
-
-//   const updateStatus = (projectId, action) => {
-//     if (!window.confirm("Are you sure?")) return;
-
-//     setProjects((prev) =>
-//       prev.map((p) => {
-//         if (p.projectId === projectId) {
-//           let newStatus =
-//             action === "approve" ? "Approved by DORD" : "Rejected by DORD";
-
-//           if (p.status === "Approved by R&D" && action === "approve")
-//             newStatus = "Fully Approved";
-
-//           return { ...p, status: newStatus };
-//         }
-//         return p;
-//       }),
-//     );
-//   };
-
-//   const getStatusColor = (status) => {
-//     if (status === "Approved") return "bg-green-500";
-//     if (status === "Rejected") return "bg-red-500";
-//     return "bg-yellow-500"; // Pending
-//   };
-
-//   const filteredProjects = projects.filter((p) => {
-//     const displayStatus = getDisplayStatus(p.status);
-
-//     const matchSearch =
-//       p.projectId.toLowerCase().includes(search.toLowerCase()) ||
-//       p.piName.toLowerCase().includes(search.toLowerCase());
-
-//     const matchFilter = filter === "All" ? true : displayStatus === filter;
-
-//     return matchSearch && matchFilter;
-//   });
-
-//   return (
-//     <div className="p-6">
-//       {/* Header */}
-//       <div className="flex justify-between items-center mb-6">
-//         <h2 className="text-2xl font-semibold">DORD Dashboard (Preview)</h2>
-//         <p className="text-gray-500">
-//           Total Projects: {filteredProjects.length}
-//         </p>
-//       </div>
-
-//       {/* Search + Filter */}
-//       <div className="flex gap-4 mb-4">
-//         <input
-//           type="text"
-//           placeholder="Search by Project ID or PI"
-//           value={search}
-//           onChange={(e) => setSearch(e.target.value)}
-//           className="border px-3 py-2 rounded-lg w-1/3"
-//         />
-
-//         <select
-//           value={filter}
-//           onChange={(e) => setFilter(e.target.value)}
-//           className="border px-3 py-2 rounded-lg cursor-pointer"
-//         >
-//           <option value="All">All</option>
-//           <option value="Pending">Pending</option>
-//           <option value="Approved">Approved</option>
-//           <option value="Rejected">Rejected</option>
-//         </select>
-//       </div>
-
-//       {/* Table */}
-//       <div className="overflow-x-auto">
-//         <table className="w-full border border-gray-300 rounded-lg">
-//           <thead className="bg-gray-100">
-//             <tr>
-//               <th className="p-2">Project ID</th>
-//               <th className="p-2">Title</th>
-//               <th className="p-2">PI Name</th>
-//               <th className="p-2">Amount</th>
-//               <th className="p-2">Status</th>
-//               <th className="p-2">Actions</th>
-//             </tr>
-//           </thead>
-
-//           <tbody>
-//             {filteredProjects.map((p) => {
-//               const displayStatus = getDisplayStatus(p.status);
-//               const isFinal =
-//                 displayStatus === "Approved" || displayStatus === "Rejected";
-
-//               return (
-//                 <tr key={p.projectId} className="text-center border-t">
-//                   <td className="p-2">{p.projectId}</td>
-//                   <td className="p-2">{p.title}</td>
-//                   <td className="p-2">{p.piName}</td>
-//                   <td className="p-2">
-//                     ₹{Number(p.totalFund).toLocaleString()}
-//                   </td>
-
-//                   <td className="p-2">
-//                     <span
-//                       className={`text-white px-2 py-1 rounded text-xs ${getStatusColor(
-//                         displayStatus,
-//                       )}`}
-//                     >
-//                       {displayStatus}
-//                     </span>
-//                   </td>
-
-//                   <td className="p-2 space-x-2">
-//                     <button className="bg-blue-500 text-white px-2 py-1 rounded text-sm cursor-pointer">
-//                       View
-//                     </button>
-
-//                     <button
-//                       disabled={isFinal}
-//                       onClick={() => updateStatus(p.projectId, "approve")}
-//                       className={`px-2 py-1 rounded text-sm ${
-//                         isFinal
-//                           ? "bg-gray-300"
-//                           : "bg-green-500 text-white cursor-pointer"
-//                       }`}
-//                     >
-//                       Approve
-//                     </button>
-
-//                     <button
-//                       disabled={isFinal}
-//                       onClick={() => updateStatus(p.projectId, "reject")}
-//                       className={`px-2 py-1 rounded text-sm ${
-//                         isFinal
-//                           ? "bg-gray-300"
-//                           : "bg-red-500 text-white cursor-pointer"
-//                       }`}
-//                     >
-//                       Reject
-//                     </button>
-//                   </td>
-//                 </tr>
-//               );
-//             })}
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default DashboardDORDPreview;
-
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  readPem,
+  importPrivateKey,
+  signData,
+  canonicalPayload,
+} from "../../utils/digitalSignature";
 
-function DashboardDORDPreview() {
-  // ======================================
-  // STATES
-  // ======================================
-
+function DashboardDORD() {
   const [projects, setProjects] = useState([]);
-
   const [filter, setFilter] = useState("All");
-
   const [search, setSearch] = useState("");
-
   const [loading, setLoading] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [privateKeyFile, setPrivateKeyFile] = useState(null);
 
   // ======================================
   // FETCH RECRUITMENTS
@@ -316,19 +46,64 @@ function DashboardDORDPreview() {
   // APPROVE RECRUITMENT
   // ======================================
 
-  const approveRecruitment = async (id) => {
+  const approveRecruitment = async (project) => {
     try {
+      if (!privateKeyFile) {
+        alert("Please upload Dean private key");
+        return;
+      }
+
       const confirmApprove = window.confirm(
         "Approve this recruitment request?",
       );
 
       if (!confirmApprove) return;
 
-      await axios.put(`http://localhost:5000/api/recruitment/${id}/approve`);
+      // ======================================
+      // PAYLOAD
+      // ======================================
+
+      const payload = canonicalPayload({
+        recruitmentId: project._id,
+        projectCode: project.projectCode,
+        action: "APPROVED",
+        signedBy: "Dean",
+        timestamp: new Date().toISOString(),
+      });
+
+      // ======================================
+      // SIGNATURE
+      // ======================================
+
+      const pem = await readPem(privateKeyFile);
+
+      const privateKey = await importPrivateKey(pem);
+
+      const signatureDean = await signData(privateKey, payload);
+
+      // ======================================
+      // API CALL
+      // ======================================
+
+      await axios.put(
+        `http://localhost:5000/api/recruitment/${project._id}/approve`,
+        {
+          payload,
+          signatureDean,
+        },
+      );
+
+      alert("Recruitment Approved Successfully");
+
+      setShowApproveModal(false);
+      setPrivateKeyFile(null);
+      setSelectedProject(null);
 
       fetchRecruitments();
     } catch (error) {
       console.log(error);
+
+      alert(error.response?.data?.message || "Approval failed");
     }
   };
 
@@ -336,17 +111,65 @@ function DashboardDORDPreview() {
   // REJECT RECRUITMENT
   // ======================================
 
-  const rejectRecruitment = async (id) => {
+  const rejectRecruitment = async (project) => {
     try {
+      if (!rejectReason.trim()) {
+        alert("Please enter rejection reason");
+        return;
+      }
+      if (!privateKeyFile) {
+        alert("Please upload Dean private key");
+        return;
+      }
       const confirmReject = window.confirm("Reject this recruitment request?");
 
       if (!confirmReject) return;
 
-      await axios.put(`http://localhost:5000/api/recruitment/${id}/reject`);
+      // ======================================
+      // PAYLOAD
+      // ======================================
 
+      const payload = canonicalPayload({
+        recruitmentId: project._id,
+        projectCode: project.projectCode,
+        action: "REJECTED",
+        reason: rejectReason,
+        signedBy: "Dean",
+        timestamp: new Date().toISOString(),
+      });
+
+      // ======================================
+      // SIGNATURE
+      // ======================================
+
+      const pem = await readPem(privateKeyFile);
+
+      const privateKey = await importPrivateKey(pem);
+
+      const signatureDean = await signData(privateKey, payload);
+
+      // ======================================
+      // API CALL
+      // ======================================
+
+      await axios.put(
+        `http://localhost:5000/api/recruitment/${project._id}/reject`,
+        {
+          payload,
+          signatureDean,
+        },
+      );
+
+      alert("Recruitment Rejected");
+      setShowRejectModal(false);
+      setRejectReason("");
+      setPrivateKeyFile(null);
+      setSelectedProject(null);
       fetchRecruitments();
     } catch (error) {
       console.log(error);
+
+      alert(error.response?.data?.message || "Rejection failed");
     }
   };
 
@@ -454,17 +277,11 @@ function DashboardDORDPreview() {
         </div>
       </div>
 
-      {/* ====================================== */}
       {/* TABLE */}
-      {/* ====================================== */}
 
       <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-gray-700">
-            {/* ====================================== */}
-            {/* TABLE HEAD */}
-            {/* ====================================== */}
-
             <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
@@ -673,7 +490,10 @@ function DashboardDORDPreview() {
                         <div className="flex flex-col gap-2 items-center">
                           <button
                             disabled={isFinal}
-                            onClick={() => approveRecruitment(project._id)}
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setShowApproveModal(true);
+                            }}
                             className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
                               isFinal
                                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
@@ -685,7 +505,10 @@ function DashboardDORDPreview() {
 
                           <button
                             disabled={isFinal}
-                            onClick={() => rejectRecruitment(project._id)}
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setShowRejectModal(true);
+                            }}
                             className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
                               isFinal
                                 ? "bg-gray-200 text-gray-500 cursor-not-allowed"
@@ -702,10 +525,95 @@ function DashboardDORDPreview() {
               )}
             </tbody>
           </table>
+          {showApproveModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-6 w-[420px] shadow-2xl">
+                <h2 className="text-2xl font-bold mb-4">Approve Recruitment</h2>
+
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload Dean private key to digitally sign approval
+                </p>
+
+                <input
+                  type="file"
+                  accept=".pem"
+                  onChange={(e) => setPrivateKeyFile(e.target.files[0])}
+                  className="w-full border rounded-xl p-3 mb-5"
+                />
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => {
+                      setShowApproveModal(false);
+                      setPrivateKeyFile(null);
+                    }}
+                    className="px-4 py-2 rounded-xl border"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() => approveRecruitment(selectedProject)}
+                    className="px-5 py-2 bg-green-600 text-white rounded-xl"
+                  >
+                    Confirm Approve
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {showRejectModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-6 w-[450px] shadow-2xl">
+                <h2 className="text-2xl font-bold mb-4 text-red-600">
+                  Reject Recruitment
+                </h2>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Rejection Reason *
+                </label>
+                <textarea
+                  placeholder="Enter rejection reason..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="w-full border rounded-xl p-3 h-28 mb-4 resize-none"
+                />
+
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Dean Private Key (.pem) *
+                </label>
+                <input
+                  type="file"
+                  accept=".pem"
+                  onChange={(e) => setPrivateKeyFile(e.target.files[0])}
+                  className="w-full border rounded-xl p-3 mb-5"
+                />
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => {
+                      setShowRejectModal(false);
+                      setRejectReason("");
+                      setPrivateKeyFile(null);
+                    }}
+                    className="px-4 py-2 rounded-xl border"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() => rejectRecruitment(selectedProject)}
+                    className="px-5 py-2 bg-red-600 text-white rounded-xl"
+                  >
+                    Confirm Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default DashboardDORDPreview;
+export default DashboardDORD;

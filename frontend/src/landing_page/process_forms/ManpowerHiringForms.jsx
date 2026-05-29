@@ -156,7 +156,7 @@ export default function ManpowerHiringForms({
       return;
     }
     window.open(
-      `http://localhost:5000/api/files/download-pdf/${fileName}`,
+      `/api/files/download-pdf/${fileName}`,
       "_blank",
     );
   };
@@ -362,7 +362,7 @@ export default function ManpowerHiringForms({
 
       const token = localStorage.getItem("token");
       const res = await fetch(
-        "http://localhost:5000/api/recruitment/create-advertisement",
+        "/api/recruitment/create-advertisement",
         {
           method: "POST",
           headers: {
@@ -384,7 +384,7 @@ export default function ManpowerHiringForms({
 
       // Recruitment PDF open
       window.open(
-        `http://localhost:5000/api/files/download-pdf/${data.pdf}`,
+        `/api/files/download-pdf/${data.pdf}`,
         "_blank",
       );
 
@@ -404,7 +404,7 @@ export default function ManpowerHiringForms({
       };
 
       const approvalRes = await fetch(
-        "http://localhost:5000/api/recruitment/generate-approval-letter",
+        "/api/recruitment/generate-approval-letter",
         {
           method: "POST",
           headers: {
@@ -419,12 +419,12 @@ export default function ManpowerHiringForms({
       if (approvalRes.ok) {
         // Approval PDF open
         window.open(
-          `http://localhost:5000/api/files/download-pdf/${approvalData.pdf}`,
+          `/api/files/download-pdf/${approvalData.pdf}`,
           "_blank",
         );
 
         await fetch(
-          `http://localhost:5000/api/recruitment/${data.recruitment._id}/approval-letter`,
+          `/api/recruitment/${data.recruitment._id}/approval-letter`,
           {
             method: "PUT",
 
@@ -461,9 +461,9 @@ export default function ManpowerHiringForms({
   const isBudgetExceeded = requestedAmount > selectedHeadAmount;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8">
-        <h1 className="text-3xl font-bold mb-8 text-center ">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
+      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 md:p-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center ">
           Recruitment Staff Member Form
         </h1>
 
@@ -954,6 +954,244 @@ export default function ManpowerHiringForms({
             )}
           </div>
 
+          <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 border-b pb-2">
+              <h2 className="text-lg sm:text-xl font-semibold">Positions</h2>
+
+              <button
+                type="button"
+                onClick={addPosition}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
+              >
+                + Add Position
+              </button>
+            </div>
+
+            {formData.positions.map((position, positionIndex) => (
+              <div
+                key={positionIndex}
+                className="border rounded-xl p-4 sm:p-6 mb-6 sm:mb-8 bg-gray-50"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Enter position Name
+                    </p>
+                    <input
+                      type="text"
+                      name="positionName"
+                      placeholder="Enter Position Name"
+                      value={position.positionName}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {[
+                        "Junior Research Fellow (JRF)",
+                        "Senior Research Fellow (SRF)",
+                        "Project Associate",
+                        "Project Assistant",
+                        "Project Manager",
+                        "Project Engineer",
+                        "Intern",
+                      ].map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => {
+                            const updated = [...formData.positions];
+
+                            updated[positionIndex].positionName = item;
+
+                            setFormData({
+                              ...formData,
+                              positions: updated,
+                            });
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Number of posts
+                    </p>
+                    <input
+                      type="number"
+                      min="1"
+                      name="numberOfPosts"
+                      placeholder="Enter Number of Posts"
+                      value={position.numberOfPosts}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Age Limit
+                    </p>
+                    <input
+                      type="text"
+                      name="ageLimit"
+                      placeholder="Enter Age Limit"
+                      value={position.ageLimit}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-0.5 text-gray-700">
+                      Enter Salary Range
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="number"
+                        min="0"
+                        name="salaryStart"
+                        placeholder="Start Range"
+                        value={position.salaryStart || ""}
+                        onChange={(e) => handlePositionChange(positionIndex, e)}
+                        className={inputClass}
+                      />
+
+                      <input
+                        type="number"
+                        min="0"
+                        name="salaryEnd"
+                        placeholder="End Range"
+                        value={position.salaryEnd || ""}
+                        onChange={(e) => handlePositionChange(positionIndex, e)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium mb-1 text-gray-700">
+                      Duration
+                    </p>
+
+                    <input
+                      type="text"
+                      name="duration"
+                      placeholder="Enter Duration"
+                      value={position.duration}
+                      onChange={(e) => handlePositionChange(positionIndex, e)}
+                      className={inputClass}
+                    />
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {[
+                        "89 Days (Extendable)",
+                        "6 Months",
+                        "12 Months",
+                        "18 Months",
+                        "24 Months",
+                      ].map((duration) => (
+                        <button
+                          key={duration}
+                          type="button"
+                          onClick={() => {
+                            const updated = [...formData.positions];
+
+                            updated[positionIndex].duration = duration;
+
+                            setFormData({
+                              ...formData,
+                              positions: updated,
+                            });
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
+                        >
+                          {duration}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ESSENTIAL QUALIFICATIONS */}
+
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2">
+                    Essential Qualifications
+                  </h3>
+
+                  {position.essentialQualifications.map((item, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={item}
+                      placeholder="Essential Qualification"
+                      onChange={(e) =>
+                        handleArrayChange(
+                          positionIndex,
+                          "essentialQualifications",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      className={inputClass + " mb-2"}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addArrayField(positionIndex, "essentialQualifications")
+                    }
+                    className="text-blue-600 text-sm"
+                  >
+                    + Add Essential Qualification
+                  </button>
+                </div>
+
+                {/* DESIRABLE QUALIFICATIONS */}
+
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2">
+                    Desirable Qualifications
+                  </h3>
+
+                  {position.desirableQualifications.map((item, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      value={item}
+                      placeholder="Desirable Qualification"
+                      onChange={(e) =>
+                        handleArrayChange(
+                          positionIndex,
+                          "desirableQualifications",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      className={inputClass + " mb-2"}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addArrayField(positionIndex, "desirableQualifications")
+                    }
+                    className="text-blue-600 text-sm"
+                  >
+                    + Add Desirable Qualification
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* ========================= */}
           {/* SUBMISSION DETAILS */}
           {/* ========================= */}
@@ -1070,13 +1308,13 @@ export default function ManpowerHiringForms({
           {/* ========================= */}
 
           <div>
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h2 className="text-xl font-semibold">Committee Members</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 border-b pb-2">
+              <h2 className="text-lg sm:text-xl font-semibold">Committee Members</h2>
 
               <button
                 type="button"
                 onClick={addCommitteeMember}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
               >
                 + Add Member
               </button>

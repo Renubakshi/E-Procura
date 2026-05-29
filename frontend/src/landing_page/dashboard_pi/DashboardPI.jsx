@@ -16,7 +16,7 @@ export default function DashboardPI() {
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-          "http://localhost:5000/api/projects/bifurcated",
+          "/api/projects/bifurcated",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -46,7 +46,7 @@ export default function DashboardPI() {
   );
 
   return (
-    <div className="min-h-screen bg-[#d6e3da] p-8 ">
+    <div className="min-h-screen bg-[#d6e3da] p-4 sm:p-6 md:p-8 ">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
         {/* LEFT: Welcome */}
@@ -60,9 +60,9 @@ export default function DashboardPI() {
         </div>
 
         {/* RIGHT: Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
           {/* Search */}
-          <div className="flex items-center bg-white shadow rounded-full px-3 py-2 w-64">
+          <div className="flex items-center bg-white shadow rounded-full px-3 py-2 w-full sm:w-64">
             <input
               type="text"
               placeholder="Search Project by Code...🔍"
@@ -82,7 +82,7 @@ export default function DashboardPI() {
       </div>
 
       {/* BIFURCATED PROJECT LIST */}
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-gray-800">
         Bifurcated Projects for Fund Booking
       </h2>
 
@@ -108,26 +108,26 @@ export default function DashboardPI() {
                 Bifurcated ✔
               </span>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <button
                   onClick={() => navigate(`/summary/${proj._id}`)}
-                  className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition"
+                  className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition w-full sm:w-auto"
                 >
                   View Summary
                 </button>
 
                 <button
                   onClick={() => navigate(`/fund-booking/${proj._id}`)}
-                  className="btn-primary"
+                  className="btn-primary w-full sm:w-auto"
                 >
                   Fund Booking
                 </button>
                 <button
-            className="btn-primary "
+            className="btn-primary w-full sm:w-auto"
             onClick={() => navigate("/pi-fund-requests")}
           >
             Fund Booking status
-             <p className="text-gray-600">
+             <p className="text-gray-600 text-xs sm:text-sm">
             Track pending, approved and rejected requests
           </p>
           </button>
@@ -139,10 +139,10 @@ export default function DashboardPI() {
 
       {/* GENERAL PROCESSES */}
       <div>
-        <h2 className="text-2xl font-semibold text-gray-800 m-6">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 m-6">
           General Processes
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {/* PROCESS CARD */}
           {[
             "No Dues Process",

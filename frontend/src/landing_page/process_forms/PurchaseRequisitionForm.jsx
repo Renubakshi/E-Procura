@@ -133,7 +133,7 @@ useEffect(() => {
 //     // formDataToSend.append("pdfHash", hashHex); // Important
 
 //     await axios.post(
-//   "http://localhost:5000/purchase/submit",
+//   "/purchase/submit",
 //   formDataToSend,
 //   {
 //     headers: {
@@ -153,7 +153,7 @@ useEffect(() => {
 async function handleSecureSubmit() {
   try {
     const response = await axios.post(
-      "http://localhost:5000/purchase/submit",
+      "/purchase/submit",
       form, // send full form JSON
       {
         responseType: "blob", // IMPORTANT
@@ -183,9 +183,9 @@ async function handleSecureSubmit() {
   }
 }
   return (
-    <div className="p-8 bg-gray-100 min-h-screen flex justify-center">
-      <div className="bg-white p-8 w-full max-w-5xl border">
-        <h2 className="text-center font-bold text-xl mb-4">
+    <div className="p-4 sm:p-6 md:p-8 bg-gray-100 min-h-screen flex justify-center">
+      <div className="bg-white p-4 sm:p-6 md:p-8 w-full max-w-5xl border">
+        <h2 className="text-center font-bold text-lg sm:text-xl mb-4">
           Purchase Requisition Form
         </h2>
         <div className="text-right mb-4">
@@ -205,7 +205,8 @@ async function handleSecureSubmit() {
 )}
         </div>
 
-        <table className="w-full border-collapse border">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] border-collapse border">
           <tbody>
             {/* 1 */}
             <tr>
@@ -638,7 +639,7 @@ async function handleSecureSubmit() {
 )}
             </div>
 
-            <div className="grid grid-cols-4 text-center mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center mt-6">
               <div>Member</div>
               <div>Member</div>
               <div>Member</div>
@@ -716,7 +717,7 @@ async function handleSecureSubmit() {
               Recommended by Registrar)
             </div>
 
-            <div className="grid grid-cols-4 text-center mt-6 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center mt-6 mb-4">
               <div>Dealing Asst. (F&A/R&D)</div>
               <div>Deputy Registrar ( F&A/ R&D) </div>
               <div>Registrar</div>
@@ -725,6 +726,7 @@ async function handleSecureSubmit() {
         </tr>
 </tbody>
         </table>
+        </div>
         <div className="border-t border-b text-center font-semibold py-1">
           Approval of the Competent Authority
         </div>

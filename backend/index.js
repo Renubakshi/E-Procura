@@ -16,7 +16,13 @@ import recruitmentRoutes from "./routes/recruitmentRoutes.js";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+// CORS — allow local dev frontends (Vite on any localhost port).
+// Proxied requests in dev are same-origin, so this only blocks unknown external origins.
+app.use(
+  cors({
+    origin: [/^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/],
+  }),
+);
 app.use("/uploads", express.static("uploads"));
 app.use("/generated-pdfs", express.static("generated-pdfs"));
 
@@ -124,7 +130,10 @@ app.post("/purchase/submit", async (req, res) => {
   try {
     const form = req.body;
 
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
 
     // Generate HTML directly from backend
@@ -165,4 +174,5 @@ app.use("/api/fund-booking", fundBookingRoutes);
 app.use("/api/recruitment", recruitmentRoutes);
 
 // SERVER RUN
-app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

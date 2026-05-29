@@ -203,7 +203,10 @@ const generateApprovalLetter = async (req, res) => {
 
     // Launch Browser
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
 
     const page = await browser.newPage();
 
@@ -588,7 +591,10 @@ if (!isValid) {
     // LAUNCH BROWSER
     // =========================
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
 
     const page = await browser.newPage();
 

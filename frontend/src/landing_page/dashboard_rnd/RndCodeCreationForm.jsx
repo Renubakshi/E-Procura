@@ -40,7 +40,7 @@ export default function RndCodeCreationForm({ onClose }) {
 
       try {
         const res = await fetch(
-          "http://localhost:5000/api/projects/project-code",
+          "/api/projects/project-code",
           {
             method: "POST",
             headers: {
@@ -83,7 +83,7 @@ export default function RndCodeCreationForm({ onClose }) {
 
   // pilist for dropdown list
   useEffect(() => {
-    fetch("http://localhost:5000/api/projects/pi-list")
+    fetch("/api/projects/pi-list")
       .then((res) => res.json())
       .then((data) => setPiList(data));
   }, []);
@@ -141,7 +141,7 @@ export default function RndCodeCreationForm({ onClose }) {
 
     const signature = await signData(privateKey, payload);
 
-    const res = await fetch("http://localhost:5000/api/projects", {
+    const res = await fetch("/api/projects", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -163,9 +163,9 @@ export default function RndCodeCreationForm({ onClose }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-700">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-700">
           Create Project Code
         </h2>
 
@@ -311,8 +311,8 @@ export default function RndCodeCreationForm({ onClose }) {
           </div>
 
           {/* Buttons */}
-          <div className="md:col-span-2 flex justify-end gap-4 mt-4">
-            <div>
+          <div className="md:col-span-2 flex flex-col sm:flex-row sm:justify-end sm:items-end gap-4 mt-4">
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Upload Private Key
               </label>
@@ -341,7 +341,7 @@ export default function RndCodeCreationForm({ onClose }) {
             <button
               type="submit"
               disabled={loadingCode || !formData.projectCode}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow-md w-full sm:w-auto"
             >
               Sign & Send to PI
             </button>

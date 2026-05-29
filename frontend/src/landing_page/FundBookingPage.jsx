@@ -81,7 +81,7 @@ export default function FundBookingPage() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`http://localhost:5000/api/projects/${id}`, {
+      const res = await fetch(`/api/projects/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -112,10 +112,10 @@ export default function FundBookingPage() {
     return <p className="p-10 text-gray-700">No project found</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg">
         {/* HEADER */}
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-gray-800">
           Complete the Processes
         </h2>
 

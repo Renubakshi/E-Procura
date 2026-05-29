@@ -15,7 +15,7 @@ export default function PIRequestsList() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/api/fund-booking", {
+      const res = await fetch("/api/fund-booking", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,11 +53,12 @@ export default function PIRequestsList() {
   }
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-2xl font-bold mb-6">My Fund Requests</h2>
+    <div className="p-4 sm:p-6 md:p-8 bg-gray-100 min-h-screen">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4 md:mb-6">My Fund Requests</h2>
 
-        <table className="w-full border border-gray-300">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] border border-gray-300">
           <thead className="bg-gray-200">
             <tr>
               <th className="p-3 border">Project Code</th>
@@ -128,6 +129,7 @@ export default function PIRequestsList() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

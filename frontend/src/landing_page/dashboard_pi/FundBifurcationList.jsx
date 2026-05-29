@@ -13,7 +13,7 @@ export default function FundBifurcationList() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/projects", {
+      const res = await fetch("/api/projects", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -30,11 +30,11 @@ export default function FundBifurcationList() {
   };
   if (loading) return <p className="text-center mt-5">Loading....</p>;
   return (
-    <div className="min-h-screen bg-[#d6e3da] p-4">
-      <div className="flex justify-end p-4">
+    <div className="min-h-screen bg-[#d6e3da] p-4 sm:p-6 md:p-8">
+      <div className="flex justify-end mb-4">
         <BackButton />
       </div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-800 mb-4 md:mb-6">
         Projects Pending Bifurcation (List of Unbifurcated Projects)
       </h2>
 

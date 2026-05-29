@@ -16,7 +16,7 @@ export default function GenerateKey() {
     publicKey: publicKeyPem,
   });
      // 🟢 Save public key to backend
-  await fetch("http://localhost:5000/api/save-public-key", {
+  await fetch("/api/save-public-key", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,12 +38,12 @@ export default function GenerateKey() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--primary)] text-white">
-      <div className="bg-[var(--primaryAccent)] p-10 rounded-xl w-[450px] shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--primary)] text-white p-4 sm:p-6">
+      <div className="bg-[var(--primaryAccent)] p-6 sm:p-8 md:p-10 rounded-xl w-full max-w-[450px] shadow-xl">
 
         {!success ? (
           <>
-            <h1 className="text-3xl font-bold mb-4">Generate Your Key Pair</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">Generate Your Key Pair</h1>
             <p className="mb-6 text-[var(--light)]">
               Your account is almost ready.  
               Click the button below to generate your secure keys.
@@ -58,7 +58,7 @@ export default function GenerateKey() {
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold mb-3">Keys Generated Successfully 🎉</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-3">Keys Generated Successfully 🎉</h1>
             <p className="text-[var(--light)] mb-6">
               Your public key is saved, and private key has been downloaded.
             </p>

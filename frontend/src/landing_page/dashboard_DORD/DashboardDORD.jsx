@@ -17,6 +17,15 @@ function DashboardDORD() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [privateKeyFile, setPrivateKeyFile] = useState(null);
+  const [signedPdfFile, setSignedPdfFile] = useState(null);
+  const [errors, setErrors] = useState({
+    privateKey: "",
+    signedPdf: "",
+  });
+  const [rejectErrors, setRejectErrors] = useState({
+    reason: "",
+    privateKey: "",
+  });
 
   // ======================================
   // FETCH RECRUITMENTS
@@ -48,10 +57,21 @@ function DashboardDORD() {
 
   const approveRecruitment = async (project) => {
     try {
+      const newErrors = {};
       if (!privateKeyFile) {
-        alert("Please upload Dean private key");
+        newErrors.privateKey = "Please upload Dean private key";
+      }
+
+      if (!signedPdfFile) {
+        newErrors.signedPdf = "Please upload signed approval PDF";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         return;
       }
+
+      setErrors({});
 
       const confirmApprove = window.confirm(
         "Approve this recruitment request?",
@@ -85,12 +105,17 @@ function DashboardDORD() {
       // API CALL
       // ======================================
 
+      const formData = new FormData();
+
+      formData.append("signedPdf", signedPdfFile);
+
+      formData.append("payload", JSON.stringify(payload));
+
+      formData.append("signatureDean", signatureDean);
+
       await axios.put(
-        `http://localhost:5000/api/recruitment/${project._id}/approve`,
-        {
-          payload,
-          signatureDean,
-        },
+        `http://localhost:5001/api/recruitment/${project._id}/approve`,
+        formData,
       );
 
       alert("Recruitment Approved Successfully");
@@ -98,7 +123,7 @@ function DashboardDORD() {
       setShowApproveModal(false);
       setPrivateKeyFile(null);
       setSelectedProject(null);
-      await axios.put(`/api/recruitment/${id}/approve`);
+      // await axios.put(`/api/recruitment/${id}/approve`);
 
       fetchRecruitments();
     } catch (error) {
@@ -129,7 +154,7 @@ function DashboardDORD() {
       // ======================================
       // PAYLOAD
       // ======================================
-      await axios.put(`/api/recruitment/${id}/reject`);
+      // await axios.put(`/api/recruitment/${id}/reject`);
 
       const payload = canonicalPayload({
         recruitmentId: project._id,
@@ -155,7 +180,7 @@ function DashboardDORD() {
       // ======================================
 
       await axios.put(
-        `http://localhost:5000/api/recruitment/${project._id}/reject`,
+        `http://localhost:5001/api/recruitment/${project._id}/reject`,
         {
           payload,
           signatureDean,
@@ -494,6 +519,15 @@ function DashboardDORD() {
                             disabled={isFinal}
                             onClick={() => {
                               setSelectedProject(project);
+
+                              setPrivateKeyFile(null);
+                              setSignedPdfFile(null);
+
+                              setErrors({
+                                privateKey: "",
+                                signedPdf: "",
+                              });
+
                               setShowApproveModal(true);
                             }}
                             className={`w-24 px-4 py-2 rounded-xl font-medium transition shadow-sm ${
@@ -529,34 +563,98 @@ function DashboardDORD() {
           </table>
           {showApproveModal && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-2xl p-6 w-[420px] shadow-2xl">
-                <h2 className="text-2xl font-bold mb-4">Approve Recruitment</h2>
+              <div className="bg-white rounded-2xl p-6 w-[450px] shadow-2xl">
+                <h2 className="text-2xl font-bold mb-2">Approve Recruitment</h2>
 
-                <p className="text-sm text-gray-600 mb-4">
-                  Upload Dean private key to digitally sign approval
+                <p className="text-sm text-gray-600 mb-6">
+                  Upload Dean private key and signed approval PDF
                 </p>
 
-                <input
-                  type="file"
-                  accept=".pem"
-                  onChange={(e) => setPrivateKeyFile(e.target.files[0])}
-                  className="w-full border rounded-xl p-3 mb-5"
-                />
+                {/* ====================================== */}
+                {/* PRIVATE KEY */}
+                {/* ====================================== */}
 
-                <div className="flex justify-end gap-3">
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Upload Dean Private Key (.pem) *
+                  </label>
+
+                  <input
+                    type="file"
+                    accept=".pem"
+                    onChange={(e) => {
+                      setPrivateKeyFile(e.target.files[0]);
+
+                      setErrors((prev) => ({
+                        ...prev,
+                        privateKey: "",
+                      }));
+                    }}
+                    className="w-full border rounded-xl p-3"
+                  />
+
+                  {errors.privateKey && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.privateKey}
+                    </p>
+                  )}
+                </div>
+
+                {/* ====================================== */}
+                {/* SIGNED PDF */}
+                {/* ====================================== */}
+
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Upload Signed Approval PDF (.pdf) *
+                  </label>
+
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      setSignedPdfFile(e.target.files[0]);
+
+                      setErrors((prev) => ({
+                        ...prev,
+                        signedPdf: "",
+                      }));
+                    }}
+                    className="w-full border rounded-xl p-3"
+                  />
+
+                  {errors.signedPdf && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.signedPdf}
+                    </p>
+                  )}
+                </div>
+
+                {/* ====================================== */}
+                {/* ACTION BUTTONS */}
+                {/* ====================================== */}
+
+                <div className="flex justify-end gap-3 mt-6">
                   <button
                     onClick={() => {
                       setShowApproveModal(false);
+
                       setPrivateKeyFile(null);
+                      setSignedPdfFile(null);
+
+                      setErrors({
+                        privateKey: "",
+                        signedPdf: "",
+                      });
                     }}
-                    className="px-4 py-2 rounded-xl border"
+                    className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50 transition"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={() => approveRecruitment(selectedProject)}
-                    className="px-5 py-2 bg-green-600 text-white rounded-xl"
+                    className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition"
                   >
                     Confirm Approve
                   </button>
@@ -567,44 +665,99 @@ function DashboardDORD() {
           {showRejectModal && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="bg-white rounded-2xl p-6 w-[450px] shadow-2xl">
-                <h2 className="text-2xl font-bold mb-4 text-red-600">
+                <h2 className="text-2xl font-bold mb-2 text-red-600">
                   Reject Recruitment
                 </h2>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Rejection Reason *
-                </label>
-                <textarea
-                  placeholder="Enter rejection reason..."
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  className="w-full border rounded-xl p-3 h-28 mb-4 resize-none"
-                />
 
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Upload Dean Private Key (.pem) *
-                </label>
-                <input
-                  type="file"
-                  accept=".pem"
-                  onChange={(e) => setPrivateKeyFile(e.target.files[0])}
-                  className="w-full border rounded-xl p-3 mb-5"
-                />
+                <p className="text-sm text-gray-600 mb-6">
+                  Provide rejection reason and digitally sign the decision
+                </p>
 
-                <div className="flex justify-end gap-3">
+                {/* ====================================== */}
+                {/* REJECTION REASON */}
+                {/* ====================================== */}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Rejection Reason *
+                  </label>
+
+                  <textarea
+                    placeholder="Enter rejection reason..."
+                    value={rejectReason}
+                    onChange={(e) => {
+                      setRejectReason(e.target.value);
+
+                      setRejectErrors((prev) => ({
+                        ...prev,
+                        reason: "",
+                      }));
+                    }}
+                    className="w-full border rounded-xl p-3 h-28 resize-none"
+                  />
+
+                  {rejectErrors.reason && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {rejectErrors.reason}
+                    </p>
+                  )}
+                </div>
+
+                {/* ====================================== */}
+                {/* PRIVATE KEY */}
+                {/* ====================================== */}
+
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Upload Dean Private Key (.pem) *
+                  </label>
+
+                  <input
+                    type="file"
+                    accept=".pem"
+                    onChange={(e) => {
+                      setPrivateKeyFile(e.target.files[0]);
+
+                      setRejectErrors((prev) => ({
+                        ...prev,
+                        privateKey: "",
+                      }));
+                    }}
+                    className="w-full border rounded-xl p-3"
+                  />
+
+                  {rejectErrors.privateKey && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {rejectErrors.privateKey}
+                    </p>
+                  )}
+                </div>
+
+                {/* ====================================== */}
+                {/* ACTION BUTTONS */}
+                {/* ====================================== */}
+
+                <div className="flex justify-end gap-3 mt-6">
                   <button
                     onClick={() => {
                       setShowRejectModal(false);
+
                       setRejectReason("");
                       setPrivateKeyFile(null);
+
+                      setRejectErrors({
+                        reason: "",
+                        privateKey: "",
+                      });
                     }}
-                    className="px-4 py-2 rounded-xl border"
+                    className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50 transition"
                   >
                     Cancel
                   </button>
 
                   <button
                     onClick={() => rejectRecruitment(selectedProject)}
-                    className="px-5 py-2 bg-red-600 text-white rounded-xl"
+                    className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition"
                   >
                     Confirm Reject
                   </button>

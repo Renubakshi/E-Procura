@@ -6,7 +6,7 @@ import crypto from "crypto";
 import puppeteer from "puppeteer";
 import { fileURLToPath } from "url";
 import CodeCreation from "../models/codeCreation.js";
-import User from "../models/user.js"
+import User from "../models/user.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -259,56 +259,56 @@ const createRecruitmentAdvertisement = async (req, res) => {
     const bodyData = JSON.parse(req.body.data);
 
     // =========================
-// DIGITAL SIGNATURE VERIFY
-// =========================
+    // DIGITAL SIGNATURE VERIFY
+    // =========================
 
-if (!req.body.payload) {
-  return res.status(400).json({
-    success: false,
-    message: "Payload missing",
-  });
-}
+    if (!req.body.payload) {
+      return res.status(400).json({
+        success: false,
+        message: "Payload missing",
+      });
+    }
 
-if (!req.body.signature) {
-  return res.status(400).json({
-    success: false,
-    message: "Signature missing",
-  });
-}
+    if (!req.body.signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Signature missing",
+      });
+    }
 
-// Parse payload
-const parsedPayload = JSON.parse(req.body.payload);
+    // Parse payload
+    const parsedPayload = JSON.parse(req.body.payload);
 
-// Find PI user
-const user = await User.findOne({
-  email: req.user.email,
-});
+    // Find PI user
+    const user = await User.findOne({
+      email: req.user.email,
+    });
 
-if (!user || !user.publicKey) {
-  return res.status(404).json({
-    success: false,
-    message: "Public key not found",
-  });
-}
+    if (!user || !user.publicKey) {
+      return res.status(404).json({
+        success: false,
+        message: "Public key not found",
+      });
+    }
 
-// Verify signature
-const verify = crypto.createVerify("RSA-SHA256");
+    // Verify signature
+    const verify = crypto.createVerify("RSA-SHA256");
 
-verify.update(req.body.payload);
+    verify.update(req.body.payload);
 
-verify.end();
+    verify.end();
 
-const isValid = verify.verify(
-  user.publicKey,
-  Buffer.from(req.body.signature, "base64")
-);
+    const isValid = verify.verify(
+      user.publicKey,
+      Buffer.from(req.body.signature, "base64"),
+    );
 
-if (!isValid) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid private key uploaded. Signature verification failed",
-  });
-}
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid private key uploaded. Signature verification failed",
+      });
+    }
     const formattedData = {
       projectTitle: bodyData.projectTitle,
       projectCode: bodyData.projectCode,
@@ -346,7 +346,7 @@ if (!isValid) {
       reportingTime: bodyData.reportingTime,
       committeeMembers: bodyData.committeeMembers,
       attachment: req.file?.path,
-      signaturePI:req.body.signature,
+      signaturePI: req.body.signature,
     };
     console.log("controller", bodyData);
 
@@ -716,7 +716,14 @@ const approveRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { payload, signatureDean } = req.body;
+    const payload = JSON.parse(req.body.payload);
+
+    const signatureDean = req.body.signatureDean;
+
+    const signedApprovalPdf = req.file ? `/uploads/${req.file.filename}` : "";
+
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
 
     // ======================================
     // FIND DEAN
@@ -797,6 +804,8 @@ const approveRecruitment = async (req, res) => {
       timestamp: new Date(),
     };
 
+    recruitment.signedApprovalPdf = signedApprovalPdf;
+
     await recruitment.save();
 
     // ======================================
@@ -809,16 +818,15 @@ const approveRecruitment = async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    alert(
-      error.response?.data?.message || "Wrong Private Key"
-    )
+    console.log(error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };
+
 const rejectRecruitment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -905,15 +913,13 @@ const rejectRecruitment = async (req, res) => {
 
     const fundHead = recruitment.fundHead;
 
-    const requestedAmount =
-      Number(recruitment.requestedAmount) || 0;
+    const requestedAmount = Number(recruitment.requestedAmount) || 0;
 
     // ======================================
     // REFUND BLOCKED FUND
     // ======================================
 
-    project.piSubmissions.divisionHeads[fundHead] +=
-      requestedAmount;
+    project.piSubmissions.divisionHeads[fundHead] += requestedAmount;
 
     await project.save();
 
@@ -944,10 +950,7 @@ const rejectRecruitment = async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    alert(
-    error.response?.data?.message ||
-    "Wrong Private Key"
-  );
+    alert(error.response?.data?.message || "Wrong Private Key");
 
     res.status(500).json({
       success: false,

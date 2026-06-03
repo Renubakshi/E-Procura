@@ -108,31 +108,31 @@ export default function DashboardPI() {
                 Bifurcated ✔
               </span>
 
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                <button
-                  onClick={() => navigate(`/summary/${proj._id}`)}
-                  className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition w-full sm:w-auto"
-                >
-                  View Summary
-                </button>
+<div className="flex flex-col sm:flex-row gap-3 sm:items-start">
+  <button
+    onClick={() => navigate(`/summary/${proj._id}`)}
+    className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition w-full sm:w-auto"
+  >
+    View Summary
+  </button>
 
-                <button
-                  onClick={() => navigate(`/fund-booking/${proj._id}`)}
-                  className="btn-primary w-full sm:w-auto"
-                >
-                  Fund Booking
-                </button>
-                <button
-            className="btn-primary w-full sm:w-auto"
-            onClick={() => navigate("/pi-fund-requests")}
-          >
-            Fund Booking status
-             <p className="text-gray-600 text-xs sm:text-sm">
-            Track pending, approved and rejected requests
-          </p>
-          </button>
-              </div>
-            </div>
+  <button
+    onClick={() => navigate(`/fund-booking/${proj._id}`)}
+    className="btn-primary w-full sm:w-auto"
+  >
+    Fund Booking
+  </button>
+
+  <button
+    className="btn-primary w-full sm:w-auto flex flex-col items-center"
+    onClick={() => navigate("/pi-fund-requests")}
+  >
+    <span>Fund Booking Status</span>
+    <span className="text-xs text-gray-600">
+      Track pending, approved and rejected requests
+    </span>
+  </button>
+</div>            </div>
           ))}
         </div>
       )}

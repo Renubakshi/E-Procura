@@ -34,7 +34,7 @@ function NavBar() {
               E-Procura
             </span>
             <span className="text-[10px] sm:text-xs text-white/80">
-              by SPrIng Labs
+              A SPrIng Lab product
             </span>
           </div>
         </Link>

@@ -49,7 +49,7 @@ function DashboardDORD() {
   const approveRecruitment = async (project) => {
     try {
       if (!privateKeyFile) {
-        alert("Please upload Dean private key");
+        alert("Please upload Dean signing key");
         return;
       }
 
@@ -119,7 +119,7 @@ function DashboardDORD() {
         return;
       }
       if (!privateKeyFile) {
-        alert("Please upload Dean private key");
+        alert("Please upload Dean signing key");
         return;
       }
       const confirmReject = window.confirm("Reject this recruitment request?");
@@ -323,7 +323,7 @@ function DashboardDORD() {
                 </th>
 
                 <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
-                  PDF
+                  Advertisement
                 </th>
 
                 <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
@@ -458,7 +458,7 @@ function DashboardDORD() {
                           onClick={() => viewPDF(project.pdfPath)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
                         >
-                          View PDF
+                          View Ad
                         </button>
                       </td>
 
@@ -533,7 +533,7 @@ function DashboardDORD() {
                 <h2 className="text-2xl font-bold mb-4">Approve Recruitment</h2>
 
                 <p className="text-sm text-gray-600 mb-4">
-                  Upload Dean private key to digitally sign approval
+                  Upload Dean's signing key to digitally sign approval
                 </p>
 
                 <input
@@ -581,7 +581,7 @@ function DashboardDORD() {
                 />
 
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Upload Dean Private Key (.pem) *
+                  Upload Dean Signing Key (.pem) *
                 </label>
                 <input
                   type="file"

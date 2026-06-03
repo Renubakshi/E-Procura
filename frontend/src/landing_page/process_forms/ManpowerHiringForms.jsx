@@ -1105,7 +1105,7 @@ export default function ManpowerHiringForms({
           {/* Private Key Upload */}
           <div>
             <label className="font-medium">
-              Upload Your Private Key (.pem)
+              Upload Your Signing Key (.pem)
             </label>
 
             <input

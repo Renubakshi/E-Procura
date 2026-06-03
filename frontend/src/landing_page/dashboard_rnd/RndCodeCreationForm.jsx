@@ -88,8 +88,8 @@ export default function RndCodeCreationForm({ onClose }) {
       .then((data) => setPiList(data));
   }, []);
   const options = piList.map((pi) => ({
-    value: pi.employeeId,
-    label: `${pi.employeeId}`,
+    value: pi.fullName,
+    label: `${pi.fullName}`,
   }));
 
   const validate = () => {
@@ -261,16 +261,16 @@ export default function RndCodeCreationForm({ onClose }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
-              PI Employee ID
+              PI Name
             </label>
 
             <Select
               className="w-full rounded-lg text-sm font-medium text-gray-600 focus:ring-blue-500"
               options={options}
-              value={options.find((opt) => opt.value === formData.piEmpId)}
+              value={options.find((opt) => opt.value === formData.piName)}
               onChange={(selected) => {
                 const selectedPI = piList.find(
-                  (pi) => pi.employeeId === selected.value,
+                  (pi) => pi.fullName === selected.value,
                 );
 
                 setFormData((prev) => ({
@@ -282,28 +282,28 @@ export default function RndCodeCreationForm({ onClose }) {
                 // clear error (important UX improvement)
                 setErrors((prev) => ({
                   ...prev,
-                  piEmpId: "",
+                  piName: "",
                 }));
               }}
-              placeholder="Select PI Employee ID"
+              placeholder="Select PI Full Name"
               maxMenuHeight={120}
             />
 
-            {errors.piEmpId && (
-              <p className="text-red-500 text-sm">{errors.piEmpId}</p>
+            {errors.piName && (
+              <p className="text-red-500 text-sm">{errors.piName}</p>
             )}
           </div>
 
           {/* PI Name */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
-              PI Name
+              PI Employee ID
             </label>
 
             <input
               type="text"
-              name="piName"
-              value={formData.piName}
+              name="piEmpId"
+              value={formData.piEmpId}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 bg-gray-100"
               disabled
@@ -314,7 +314,7 @@ export default function RndCodeCreationForm({ onClose }) {
           <div className="md:col-span-2 flex flex-col sm:flex-row sm:justify-end sm:items-end gap-4 mt-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-600 mb-1">
-                Upload Private Key
+                Upload Signing Key
               </label>
 
               <input

@@ -98,33 +98,6 @@ export default function PIRequestsList() {
                 <td className="p-3 border text-sm text-gray-700">
                   {req.remarkByDean || "-"}
                 </td>
-
-                <td className="p-3 border">
-                  {/* Rejected */}
-                  {req.status === "Rejected" && (
-                    <button
-                      onClick={() => navigate(`/fund-booking/${req.projectId}`)}
-                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Reapply
-                    </button>
-                  )}
-
-                  {/* Approved manpower */}
-                  {req.status === "Approved" && req.process === "manpower" && (
-                    <button
-                      onClick={() => navigate(`/manpower-hiring`)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Fill Recruitment Form
-                    </button>
-                  )}
-
-                  {/* Pending */}
-                  {req.status === "Pending" && (
-                    <span className="text-gray-500">No Action</span>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>

@@ -31,7 +31,7 @@ export default function GenerateKey() {
     console.log("Public Key:", publicKeyPem);
 
     // Download private key
-    downloadFile("private-key.pem", privateKeyPem);
+    downloadFile("signing-key.pem", privateKeyPem);
 
     setLoading(false);
     setSuccess(true);
@@ -60,7 +60,7 @@ export default function GenerateKey() {
           <>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-3">Keys Generated Successfully 🎉</h1>
             <p className="text-[var(--light)] mb-6">
-              Your public key is saved, and private key has been downloaded.
+              Your Verification key is saved, and Signing key has been downloaded.
             </p>
 
             <button

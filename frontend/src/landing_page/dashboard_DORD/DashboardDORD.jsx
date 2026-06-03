@@ -70,7 +70,7 @@ function DashboardDORD() {
     try {
       const newErrors = {};
       if (!privateKeyFile) {
-        newErrors.privateKey = "Please upload Dean private key";
+        newErrors.privateKey = "Please upload Dean Signing key";
       }
 
       if (!signedPdfFile) {
@@ -155,7 +155,7 @@ function DashboardDORD() {
         return;
       }
       if (!privateKeyFile) {
-        alert("Please upload Dean private key");
+        alert("Please upload Dean signing key");
         return;
       }
       const confirmReject = window.confirm("Reject this recruitment request?");
@@ -662,7 +662,7 @@ function DashboardDORD() {
                 </th>
 
                 <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
-                  PDF
+                  Advertisement
                 </th>
 
                 <th className="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
@@ -797,7 +797,7 @@ function DashboardDORD() {
                           onClick={() => viewPDF(project.pdfPath)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
                         >
-                          View PDF
+                          View Ad
                         </button>
                       </td>
 
@@ -880,8 +880,8 @@ function DashboardDORD() {
               <div className="bg-white rounded-2xl p-6 w-[450px] shadow-2xl">
                 <h2 className="text-2xl font-bold mb-2">Approve Recruitment</h2>
 
-                <p className="text-sm text-gray-600 mb-6">
-                  Upload Dean private key and signed approval PDF
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload Dean's signing key to digitally sign approval
                 </p>
 
                 {/* ====================================== */}

@@ -80,7 +80,7 @@ app.post("/api/save-public-key", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: "Public key saved successfully" });
+    res.json({ message: "Verification key saved successfully" });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error" });

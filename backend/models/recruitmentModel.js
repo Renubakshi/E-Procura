@@ -182,7 +182,7 @@ const recruitmentSchema = new mongoose.Schema(
     },
 
     signaturePI: {
-      type:String,
+      type: String,
     },
 
     // ======================================
@@ -194,6 +194,10 @@ const recruitmentSchema = new mongoose.Schema(
     },
 
     approvalLetterPath: {
+      type: String,
+    },
+
+    signedApprovalPdf: {
       type: String,
     },
 
@@ -221,24 +225,23 @@ const recruitmentSchema = new mongoose.Schema(
       type: String,
     },
     deanDecision: {
-  action: {
-    type: String,
-    enum: ["APPROVED", "REJECTED"],
-  },
-  reason:String,
-  signedBy: String,
+      action: {
+        type: String,
+        enum: ["APPROVED", "REJECTED"],
+      },
+      reason: String,
+      signedBy: String,
 
-  signatureDean: String,
+      signatureDean: String,
 
-  payload: Object,
+      payload: Object,
 
-  timestamp: Date,
-},
+      timestamp: Date,
+    },
   },
   {
     timestamps: true,
   },
-  
 );
 
 const Recruitment = mongoose.model("Recruitment", recruitmentSchema);

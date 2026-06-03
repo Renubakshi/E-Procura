@@ -39,7 +39,7 @@ router.get("/", getAllRecruitments);
 
 // Approve recruitment
 
-router.put("/:id/approve", approveRecruitment);
+router.put("/:id/approve", upload.single("signedPdf"), approveRecruitment);
 
 // Reject recruitment
 

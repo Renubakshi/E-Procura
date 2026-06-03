@@ -5,7 +5,7 @@ function AuthPageWrapper() {
     <div className="relative w-full min-h-screen overflow-hidden">
       {/* Background image */}
       <img
-        src="../../assets/iitbhilai1.jpg"
+        src="/assets/iitbhilai1.jpg"
         alt="background"
         className="absolute inset-0 w-full h-full object-cover"
       />

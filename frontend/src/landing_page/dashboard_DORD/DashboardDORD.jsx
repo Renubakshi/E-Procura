@@ -8,6 +8,10 @@ import {
 } from "../../utils/digitalSignature";
 
 function DashboardDORD() {
+  // ── tab ──
+  const [activeTab, setActiveTab] = useState("recruitment");
+
+  // ── recruitment state (unchanged) ──
   const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
@@ -18,14 +22,21 @@ function DashboardDORD() {
   const [rejectReason, setRejectReason] = useState("");
   const [privateKeyFile, setPrivateKeyFile] = useState(null);
   const [signedPdfFile, setSignedPdfFile] = useState(null);
-  const [errors, setErrors] = useState({
-    privateKey: "",
-    signedPdf: "",
-  });
-  const [rejectErrors, setRejectErrors] = useState({
-    reason: "",
-    privateKey: "",
-  });
+  const [errors, setErrors] = useState({ privateKey: "", signedPdf: "" });
+  const [rejectErrors, setRejectErrors] = useState({ reason: "", privateKey: "" });
+
+  // ── fund booking state ──
+  const [fundBookings, setFundBookings] = useState([]);
+  const [fbLoading, setFbLoading] = useState(false);
+  const [fbFilter, setFbFilter] = useState("All");
+  const [fbSearch, setFbSearch] = useState("");
+  const [fbSelectedBooking, setFbSelectedBooking] = useState(null);
+  const [fbShowApproveModal, setFbShowApproveModal] = useState(false);
+  const [fbShowRejectModal, setFbShowRejectModal] = useState(false);
+  const [fbSignedPdfFile, setFbSignedPdfFile] = useState(null);
+  const [fbRejectRemark, setFbRejectRemark] = useState("");
+  const [fbApproveError, setFbApproveError] = useState("");
+  const [fbRejectError, setFbRejectError] = useState("");
 
   // ======================================
   // FETCH RECRUITMENTS
@@ -245,6 +256,108 @@ function DashboardDORD() {
   };
 
   // ======================================
+  // FUND BOOKING — fetch all
+  // ======================================
+
+  const fetchFundBookings = async () => {
+    try {
+      setFbLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/fund-booking/all", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setFundBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFbLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "fundBooking") fetchFundBookings();
+  }, [activeTab]);
+
+  // ======================================
+  // FUND BOOKING — approve (with PDF)
+  // ======================================
+
+  const approveFundBooking = async () => {
+    if (!fbSignedPdfFile) {
+      setFbApproveError("Please upload the signed approval PDF");
+      return;
+    }
+    if (!window.confirm("Approve this fund booking request?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("signedPdf", fbSignedPdfFile);
+      const res = await fetch(`/api/fund-booking/${fbSelectedBooking._id}/approve`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      alert("Fund booking approved");
+      setFbShowApproveModal(false);
+      setFbSignedPdfFile(null);
+      setFbSelectedBooking(null);
+      setFbApproveError("");
+      fetchFundBookings();
+    } catch (err) {
+      alert(err.message || "Approval failed");
+    }
+  };
+
+  // ======================================
+  // FUND BOOKING — reject (with remark)
+  // ======================================
+
+  const rejectFundBooking = async () => {
+    if (!fbRejectRemark.trim()) {
+      setFbRejectError("Please enter a rejection reason");
+      return;
+    }
+    if (!window.confirm("Reject this fund booking request?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/fund-booking/${fbSelectedBooking._id}/reject`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ remarkByDean: fbRejectRemark }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      alert("Fund booking rejected");
+      setFbShowRejectModal(false);
+      setFbRejectRemark("");
+      setFbSelectedBooking(null);
+      setFbRejectError("");
+      fetchFundBookings();
+    } catch (err) {
+      alert(err.message || "Rejection failed");
+    }
+  };
+
+  // ======================================
+  // FUND BOOKING — filtered list
+  // ======================================
+
+  const filteredFundBookings = fundBookings.filter((b) => {
+    const matchSearch =
+      b.projectCode?.toLowerCase().includes(fbSearch.toLowerCase()) ||
+      b.requestedBy?.toLowerCase().includes(fbSearch.toLowerCase()) ||
+      b.head?.toLowerCase().includes(fbSearch.toLowerCase());
+    const matchFilter = fbFilter === "All" ? true : b.status === fbFilter;
+    return matchSearch && matchFilter;
+  });
+
+  // ======================================
   // UI
   // ======================================
 
@@ -267,12 +380,213 @@ function DashboardDORD() {
 
         <div className="bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-2xl shadow-sm border border-gray-200 w-full lg:w-auto">
           <p className="text-sm text-gray-500">Total Requests</p>
-
           <h2 className="text-2xl sm:text-3xl font-bold text-blue-700">
-            {filteredProjects.length}
+            {activeTab === "recruitment" ? filteredProjects.length : filteredFundBookings.length}
           </h2>
         </div>
       </div>
+
+      {/* ====================================== */}
+      {/* TAB SWITCHER */}
+      {/* ====================================== */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setActiveTab("recruitment")}
+          className={`px-5 py-2 rounded-xl font-semibold text-sm transition ${
+            activeTab === "recruitment"
+              ? "bg-blue-600 text-white shadow"
+              : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          Recruitment Requests
+        </button>
+        <button
+          onClick={() => setActiveTab("fundBooking")}
+          className={`px-5 py-2 rounded-xl font-semibold text-sm transition ${
+            activeTab === "fundBooking"
+              ? "bg-blue-600 text-white shadow"
+              : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          Fund Booking Requests
+        </button>
+      </div>
+
+      {/* ====================================== */}
+      {/* FUND BOOKING TAB */}
+      {/* ====================================== */}
+      {activeTab === "fundBooking" && (
+        <div>
+          {/* Search + Filter */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="Search by Project Code, PI Email, or Budget Head"
+                value={fbSearch}
+                onChange={(e) => setFbSearch(e.target.value)}
+                className="flex-1 border border-gray-300 px-5 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition"
+              />
+              <select
+                value={fbFilter}
+                onChange={(e) => setFbFilter(e.target.value)}
+                className="border border-gray-300 px-5 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[180px]"
+              >
+                <option value="All">All Requests</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-gray-700">
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                  <tr>
+                    {["Project Code", "Project Title", "Budget Head", "Requested Amount", "Current Balance", "Balance After Approval", "Process", "Requested By", "Status", "Signed PDF", "Actions"].map((h) => (
+                      <th key={h} className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {fbLoading ? (
+                    <tr><td colSpan="11" className="text-center p-10 text-gray-500">Loading fund booking requests...</td></tr>
+                  ) : filteredFundBookings.length === 0 ? (
+                    <tr><td colSpan="11" className="text-center p-10 text-gray-500">No fund booking requests found</td></tr>
+                  ) : (
+                    filteredFundBookings.map((booking) => {
+                      const isFinal = booking.status === "Approved" || booking.status === "Rejected";
+                      return (
+                        <tr key={booking._id} className="border-b border-gray-100 hover:bg-blue-50/40 transition">
+                          <td className="px-6 py-5 font-semibold text-gray-800">{booking.projectCode}</td>
+                          <td className="px-6 py-5 text-gray-700 text-sm max-w-[180px]">
+                            {booking.projectId?.piSubmissions?.title || "—"}
+                          </td>
+                          <td className="px-6 py-5">{booking.head}</td>
+                          <td className="px-6 py-5">
+                            <span className="font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-xl">
+                              ₹{booking.requestedAmount?.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className="font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-xl">
+                              ₹{(booking.projectId?.piSubmissions?.divisionHeads?.[booking.head] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className="font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-xl">
+                              ₹{((booking.projectId?.piSubmissions?.divisionHeads?.[booking.head] ?? 0) - (booking.requestedAmount || 0)).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 capitalize">{booking.process?.replace(/_/g, " ") || "-"}</td>
+                          <td className="px-6 py-5 text-gray-600 text-xs">{booking.requestedBy}</td>
+                          <td className="px-6 py-5">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(booking.status)}`}>
+                              {booking.status}
+                            </span>
+                            {booking.status === "Rejected" && booking.remarkByDean && (
+                              <p className="text-xs text-red-600 mt-1 max-w-[160px]">"{booking.remarkByDean}"</p>
+                            )}
+                          </td>
+                          <td className="px-6 py-5">
+                            {booking.signedApprovalPdf ? (
+                              <button
+                                onClick={() => window.open(booking.signedApprovalPdf, "_blank")}
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-medium transition"
+                              >
+                                View PDF
+                              </button>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Not uploaded</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-5">
+                            <div className="flex flex-col gap-2">
+                              <button
+                                disabled={isFinal}
+                                onClick={() => { setFbSelectedBooking(booking); setFbSignedPdfFile(null); setFbApproveError(""); setFbShowApproveModal(true); }}
+                                className={`px-4 py-2 rounded-xl text-xs font-medium transition ${isFinal ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-emerald-500 hover:bg-emerald-600 text-white"}`}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                disabled={isFinal}
+                                onClick={() => { setFbSelectedBooking(booking); setFbRejectRemark(""); setFbRejectError(""); setFbShowRejectModal(true); }}
+                                className={`px-4 py-2 rounded-xl text-xs font-medium transition ${isFinal ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"}`}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Approve Modal */}
+          {fbShowApproveModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl mx-4">
+                <h2 className="text-xl font-bold mb-1">Approve Fund Booking</h2>
+                <p className="text-sm text-gray-500 mb-1">Project: <span className="font-semibold text-gray-700">{fbSelectedBooking?.projectCode}</span></p>
+                <p className="text-sm text-gray-500 mb-4">Head: <span className="font-semibold text-gray-700">{fbSelectedBooking?.head}</span></p>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Signed Approval PDF <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => { setFbSignedPdfFile(e.target.files[0]); setFbApproveError(""); }}
+                  className="w-full border rounded-xl p-3 mb-1"
+                />
+                {fbApproveError && <p className="text-red-500 text-sm mb-3">{fbApproveError}</p>}
+                <div className="flex justify-end gap-3 mt-4">
+                  <button onClick={() => { setFbShowApproveModal(false); setFbSignedPdfFile(null); }} className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">Cancel</button>
+                  <button onClick={approveFundBooking} className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl">Confirm Approve</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Reject Modal */}
+          {fbShowRejectModal && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl mx-4">
+                <h2 className="text-xl font-bold mb-1 text-red-600">Reject Fund Booking</h2>
+                <p className="text-sm text-gray-500 mb-4">Project: <span className="font-semibold text-gray-700">{fbSelectedBooking?.projectCode}</span> — {fbSelectedBooking?.head}</p>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Rejection Reason <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  placeholder="Enter reason for rejection..."
+                  value={fbRejectRemark}
+                  onChange={(e) => { setFbRejectRemark(e.target.value); setFbRejectError(""); }}
+                  className="w-full border rounded-xl p-3 h-28 resize-none outline-none focus:ring-2 focus:ring-red-400"
+                />
+                {fbRejectError && <p className="text-red-500 text-sm mt-1">{fbRejectError}</p>}
+                <div className="flex justify-end gap-3 mt-4">
+                  <button onClick={() => { setFbShowRejectModal(false); setFbRejectRemark(""); }} className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50">Cancel</button>
+                  <button onClick={rejectFundBooking} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl">Confirm Reject</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ====================================== */}
+      {/* RECRUITMENT TAB (existing) */}
+      {/* ====================================== */}
+      {activeTab === "recruitment" && <>
 
       {/* ====================================== */}
       {/* SEARCH + FILTER */}
@@ -767,6 +1081,7 @@ function DashboardDORD() {
           )}
         </div>
       </div>
+      </> }
     </div>
   );
 }

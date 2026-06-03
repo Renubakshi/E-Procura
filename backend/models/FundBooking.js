@@ -37,8 +37,14 @@ const fundBookingSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    // dean remark
+    // dean remark on rejection
     remarkByDean: {
+      type: String,
+      default: "",
+    },
+
+    // signed PDF uploaded by dean on approval
+    signedApprovalPdf: {
       type: String,
       default: "",
     },

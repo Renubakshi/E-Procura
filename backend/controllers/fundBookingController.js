@@ -77,18 +77,78 @@ let totalAmount = 0;
   }
 };
 
-// get fund request status
+// PI — get my fund requests
 export const getMyFundRequests = async (req, res) => {
   try {
     const requests = await FundBooking.find({
       requestedBy: req.user.email,
-    }).sort({ createdAt: -1 });
+    }).populate("projectId", "piSubmissions").sort({ createdAt: -1 });
 
     res.status(200).json(requests);
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// DORD — get all fund booking requests
+export const getAllFundBookings = async (req, res) => {
+  try {
+    const requests = await FundBooking.find().populate("projectId", "piSubmissions").sort({ createdAt: -1 });
+    res.status(200).json(requests);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// DORD — approve a fund booking (with optional signed PDF upload)
+export const approveFundBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await FundBooking.findById(id);
+    if (!booking) return res.status(404).json({ message: "Request not found" });
+
+    if (booking.status !== "Pending")
+      return res.status(400).json({ message: "Request already processed" });
+
+    const signedApprovalPdf = req.file ? `/uploads/${req.file.filename}` : "";
+
+    booking.status = "Approved";
+    booking.signedApprovalPdf = signedApprovalPdf;
+    booking.remarkByDean = "";
+    await booking.save();
+
+    res.status(200).json({ message: "Fund booking approved", booking });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// DORD — reject a fund booking (with remark)
+export const rejectFundBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { remarkByDean } = req.body;
+
+    if (!remarkByDean || !remarkByDean.trim())
+      return res.status(400).json({ message: "Rejection remark is required" });
+
+    const booking = await FundBooking.findById(id);
+    if (!booking) return res.status(404).json({ message: "Request not found" });
+
+    if (booking.status !== "Pending")
+      return res.status(400).json({ message: "Request already processed" });
+
+    booking.status = "Rejected";
+    booking.remarkByDean = remarkByDean.trim();
+    await booking.save();
+
+    res.status(200).json({ message: "Fund booking rejected", booking });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

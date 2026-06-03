@@ -1123,11 +1123,11 @@ export default function ManpowerHiringForms({
 
           {/* SUBMIT */}
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex">
             <button
               type="submit"
               disabled={submitting || isBudgetExceeded}
-              className={`btn-primary ${
+              className={`px-6 py-2.5 rounded-xl font-semibold text-white transition w-full sm:w-auto ${
                 submitting || isBudgetExceeded
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-700 hover:bg-blue-800"

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  zoom: 0.8;
+}
+
 /* primary colors */
 :root {
   --primary: #01161e;

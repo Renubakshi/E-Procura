@@ -763,7 +763,7 @@ async function handleSecureSubmit() {
   <button
     type="button"
     onClick={handleSecureSubmit}
-    className="bg-blue-600 text-white px-6 py-2 mt-4"
+    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 mt-4 rounded-lg w-full sm:w-auto transition font-semibold"
   >
     Submit Securely
   </button>

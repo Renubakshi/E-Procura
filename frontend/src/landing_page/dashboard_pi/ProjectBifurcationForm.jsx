@@ -143,7 +143,7 @@ const isExceeded = remainingAmount < 0;
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-tr from-gray-100 to-gray-50">
       <div className="glass-card w-full max-w-4xl p-4 sm:p-6 md:p-8 shadow-lg fade-in">
-        <div className="flex justify-end m-4">
+        <div className="flex justify-end mb-4">
           <BackButton/>
         </div>
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary text-center mb-6">
@@ -281,7 +281,7 @@ const isExceeded = remainingAmount < 0;
             <input type="file" accept=".pem" onChange={handleKeyFileChange} required className="w-full mt-2 p-2 border rounded" />
           </div>
 
-          <button type="submit" className="btn-primary">
+          <button type="submit" className="btn-primary w-full sm:w-auto">
             Sign & Submit
           </button>
         </form>

@@ -64,7 +64,7 @@ function App() {
         <Route path="/projects/:id" element={<ProjectBifurcationForm />} />
         <Route path="/summary/:id" element={<ProjectSummary />} />
         <Route path="/projects" element={<FundBifurcationList />} />
-        <Route path="/pi-fund-requests" element={<PIRequestsList />} />
+        <Route path="/pi-fund-requests/:projectId" element={<PIRequestsList />} />
         <Route path="/manpower-hiring" element={<ManpowerHiringForm />} />
         <Route path="/fund-booking/:id" element={<FundBookingPage />} />
       </Routes>

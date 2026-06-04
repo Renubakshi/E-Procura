@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import CryptoJS from "crypto-js";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -94,7 +95,14 @@ export default function SignupPage() {
     if (!validate()) return;
 
     try {
-      const res = await axios.post("/api/signup", form);
+      const hashedPassword = CryptoJS.SHA256(form.password).toString();
+
+      const signupData = {
+        ...form,
+        password: hashedPassword,
+        confirmPassword: hashedPassword,
+      };
+      const res = await axios.post("/api/signup", signupData);
 
       if (res.data.success) {
         localStorage.setItem("signupEmail", form.email);

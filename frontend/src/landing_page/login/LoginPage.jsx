@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import CryptoJS from "crypto-js";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -54,8 +55,12 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
+      const hashedPassword = CryptoJS.SHA256(form.password).toString();
 
-      const res = await axios.post("/api/login", form);
+      const res = await axios.post("/api/login", {
+        ...form,
+        password: hashedPassword,
+      });
 
       // ✅ Save token
       localStorage.setItem("token", res.data.token);

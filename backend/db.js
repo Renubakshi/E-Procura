@@ -2,10 +2,9 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/procurementDB");
-    console.log("✅ MongoDB connected");
+    await mongoose.connect(process.env.MONGODB_URI);
   } catch (error) {
-    console.log("❌ MongoDB error:", error);
+    console.error("MongoDB connection failed:", error);
     process.exit(1);
   }
 };

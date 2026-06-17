@@ -11,8 +11,11 @@ import fs from "fs";
 import puppeteer from "puppeteer";
 import projectRoutes from "./routes/projectsRoutes.js";
 import fileRoutes from "./routes/fileRoutes.js";
-import fundBookingRoutes from "./routes/fundBookingRoutes.js";
+// import fundBookingRoutes from "./routes/fundBookingRoutes.js";
 import recruitmentRoutes from "./routes/recruitmentRoutes.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -20,11 +23,12 @@ app.use(express.json());
 // Proxied requests in dev are same-origin, so this only blocks unknown external origins.
 app.use(
   cors({
-    origin: [/^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/],
+    origin:process.env.FRONTEND_URL,
+    credentials:true,
   }),
 );
 app.use("/uploads", express.static("uploads"));
-app.use("/generated-pdfs", express.static("generated-pdfs"));
+// app.use("/generated-pdfs", express.static("generated-pdfs"));
 
 // connect to DB
 connectDB();
@@ -55,15 +59,12 @@ app.post("/api/signup", async (req, res) => {
 
     res.json({ success: true, userId: user._id });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 // ⬇️ Save Public Key After Key Generation
 app.post("/api/save-public-key", async (req, res) => {
-  console.log("Incoming request body:");
-  console.log(req.body);
   try {
     const { email, publicKey } = req.body;
 
@@ -82,7 +83,6 @@ app.post("/api/save-public-key", async (req, res) => {
 
     res.json({ message: "Verification key saved successfully" });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -108,7 +108,7 @@ app.post("/api/login", async (req, res) => {
         email: user.email,
         employeeId: user.employeeId,
       },
-      "SECRET_KEY",
+      process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
 
@@ -121,7 +121,6 @@ app.post("/api/login", async (req, res) => {
       },
     });
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -163,16 +162,15 @@ app.post("/purchase/submit", async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error(err);
     res.status(500).send("Error generating PDF");
   }
 });
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/files", fileRoutes);
-app.use("/api/fund-booking", fundBookingRoutes);
+// app.use("/api/fund-booking", fundBookingRoutes);
 app.use("/api/recruitment", recruitmentRoutes);
 
 // SERVER RUN
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT);

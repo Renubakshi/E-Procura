@@ -1,20 +1,20 @@
 import CodeCreation from "../models/codeCreation.js";
 import crypto from "crypto";
-import User from "../models/user.js"
-import { title } from "process";
-import fs from "fs"
+import User from "../models/user.js";
+import cloudinary from "../config/cloudinary.js";
+import uploadPdfToCloudinary from "../utils/uploadPdfToCloudinary.js";
 
 // Generate Empld - PI List for rnd form
-export const getPIList = async(req,res)=>{
-    const piList = await User.find({ role: "PI" }).select("fullName employeeId");
-    res.json(piList);
+export const getPIList = async (req, res) => {
+  const piList = await User.find({ role: "PI" }).select("fullName employeeId");
+  res.json(piList);
 };
 
 // Generate Poject code by RND
 export const generateProjectCode = async (req, res) => {
   try {
     const { department } = req.body;
-    
+
     const year = new Date().getFullYear();
 
     const lastProject = await CodeCreation.findOne({
@@ -26,16 +26,22 @@ export const generateProjectCode = async (req, res) => {
 
     const paddedSeq = String(sequenceNumber).padStart(4, "0");
     const projectCode = `${year}/${department}/${paddedSeq}`;
-    
-    res.status(200).json({ projectCode, sequenceNumber,year });
+
+    res.status(200).json({ projectCode, sequenceNumber, year });
   } catch (err) {
     res.status(500).json({ message: "Error generating code" });
   }
 };
 
-// PROJECT CODE FORM CREATED BY RND  
+// PROJECT CODE FORM CREATED BY RND
 export const createProject = async (req, res) => {
   try {
+    // Role check
+    if (req.user.role !== "RND") {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
 
     const {
       department,
@@ -46,20 +52,20 @@ export const createProject = async (req, res) => {
       payload,
       sequenceNumber,
       year,
-      signature
+      signature,
     } = req.body;
 
-const piUser = await User.findOne({ // Validate PI exists
-  employeeId: piEmpId,
-  role: "PI"
-});
+    const piUser = await User.findOne({
+      employeeId: piEmpId,
+      role: "PI",
+    });
 
-if (!piUser) {
-  return res.status(400).json({
-    message: "Invalid PI selected"
-  });
-}
-    const rndUser = await User.findOne({ role: "RND" }); // fetch RND public key
+    if (!piUser) {
+      return res.status(400).json({
+        message: "Invalid PI selected",
+      });
+    }
+    const rndUser = await User.findById(req.user.id);
 
     if (!rndUser) {
       return res.status(404).json({ message: "RND user not found" });
@@ -69,91 +75,83 @@ if (!piUser) {
 
     const verify = crypto.createVerify("RSA-SHA256"); //verify signature
 
-verify.update(JSON.stringify(payload));
+    verify.update(JSON.stringify(payload));
     verify.end();
 
-    const isValid = verify.verify(
-      publicKey,
-      Buffer.from(signature, "base64")
-    );
+    const isValid = verify.verify(publicKey, Buffer.from(signature, "base64"));
 
     if (!isValid) {
       return res.status(401).json({
-        message: "Signature verification failed"
+        message: "Signature verification failed",
       });
     }
-const exists = await CodeCreation.findOne({ projectCode }); // Insertion in DB
+    const exists = await CodeCreation.findOne({ projectCode }); // Insertion in DB
 
-if (exists) {
-  return res.status(400).json({
-    message: "Project code already exists"
-  });
-}
+    if (exists) {
+      return res.status(400).json({
+        message: "Project code already exists",
+      });
+    }
 
-const newProject = await CodeCreation.create({
-  projectCode,
-  department,
-  year,
-  sequenceNumber,
-  totalFundReceived,
-  bankTransactionId,
-  piEmpId: piUser.employeeId,
-  piName: piUser.fullName,
-  signature,
-  signedBy: rndUser.role,
-  payload
-});
+    const newProject = await CodeCreation.create({
+      projectCode,
+      department,
+      year,
+      sequenceNumber,
+      totalFundReceived,
+      bankTransactionId,
+      piEmpId: piUser.employeeId,
+      piName: piUser.fullName,
+      signature,
+      signedBy: rndUser.role,
+      payload,
+    });
 
-res.status(201).json({
-  message: "Project created successfully",
-  project: newProject
-});
-} catch (error) {
+    res.status(201).json({
+      message: "Project created successfully",
+      project: newProject,
+    });
+  } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-}; 
+};
 
 // PI - Get all Non-Bifurcated Projects
 export const getProjects = async (req, res) => {
   try {
-    console.log("Route hit");
-
     const employeeId = req.user.employeeId; // coming from JWT
 
     const projects = await CodeCreation.find({
       piEmpId: employeeId, // Must match DB field
-      isBifurcated:false,
+      isBifurcated: false,
     }).select("projectCode totalFundReceived bankTransactionId piName");
 
-
     res.json(projects);
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
-}
+};
+
 // PI - Get Bifurcated Projects
 export const getBifurcatedProjects = async (req, res) => {
   try {
-    console.log("Route hit");
-
     const employeeId = req.user.employeeId; // coming from JWT
 
     const projects = await CodeCreation.find({
       piEmpId: employeeId, // Must match DB field
-      isBifurcated:true,
-    }).select("projectCode totalFundReceived bankTransactionId piName piSubmissions");
-
+      isBifurcated: true,
+    }).select(
+      "projectCode totalFundReceived bankTransactionId piName piSubmissions",
+    );
 
     res.json(projects);
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
-}
+};
 
 // PI: GET SINGLE PROJECT BY ID
 export const getProjectsById = async (req, res) => {
@@ -163,13 +161,17 @@ export const getProjectsById = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-
+    if (req.user.role === "PI" && project.piEmpId !== req.user.employeeId) {
+      return res.status(403).json({
+        message: "Access denied",
+      });
+    }
     res.json(project);
   } catch (err) {
     console.error("Error fetching project:", err);
     res.status(500).json({ message: "Server error" });
   }
-}
+};
 
 // UPDATE PROJECT FORM (PI) - bifurcation
 export const updateProjectByPI = async (req, res) => {
@@ -180,20 +182,15 @@ export const updateProjectByPI = async (req, res) => {
     if (!req.body.signature)
       return res.status(400).json({ msg: "signature missing" });
 
-    if (!req.file)
-      return res.status(400).json({ msg: "attachment missing" });
+    if (!req.file) return res.status(400).json({ msg: "attachment missing" });
 
     const parsedForm = JSON.parse(req.body.formData); //string to object
     const email = req.user.email;
-
-    console.log("parsedForm",parsedForm);
-    
     const user = await User.findOne({ email });
 
     if (!user || !user.publicKey) {
       return res.status(404).json({ msg: "Public key not found" });
-    }
-
+    };
     // 🔐 Verify PI signature
     const verify = crypto.createVerify("RSA-SHA256");
     verify.update(JSON.stringify(parsedForm));
@@ -201,15 +198,19 @@ export const updateProjectByPI = async (req, res) => {
 
     const isValid = verify.verify(
       user.publicKey,
-      Buffer.from(req.body.signature, "base64")
+      Buffer.from(req.body.signature, "base64"),
     );
 
     if (!isValid) {
-      return res.status(400).json({ msg: "Invalid private key uploaded. Signature verification failed" });
+      return res
+        .status(400)
+        .json({
+          msg: "Invalid private key uploaded. Signature verification failed",
+        });
     }
 
     // 📄 Hash uploaded PDF
-    const fileBuffer = fs.readFileSync(req.file.path);
+    const fileBuffer = req.file.buffer;
 
     const backendPdfHash = crypto
       .createHash("sha256")
@@ -220,7 +221,7 @@ export const updateProjectByPI = async (req, res) => {
       return res.status(400).json({ msg: "PDF tampered or mismatch" });
     }
 
-        const project = await CodeCreation.findById(req.params.id);
+    const project = await CodeCreation.findById(req.params.id);
 
     if (!project) {
       return res.status(404).json({ msg: "Project not found" });
@@ -232,21 +233,28 @@ export const updateProjectByPI = async (req, res) => {
     }
 
     const total =
-  parsedForm.divisionHeads["Manpower (including Interns)"] +
-  parsedForm.divisionHeads["Equipment"] +
-  parsedForm.divisionHeads["Consumables/Contingency/Travel"] +
-  parsedForm.divisionHeads["Bootcamps/Events"] +
-  parsedForm.divisionHeads["Overhead"];
+      parsedForm.divisionHeads["Manpower (including Interns)"] +
+      parsedForm.divisionHeads["Equipment"] +
+      parsedForm.divisionHeads["Consumables/Contingency/Travel"] +
+      parsedForm.divisionHeads["Bootcamps/Events"] +
+      parsedForm.divisionHeads["Overhead"];
 
-if (total > project.totalFundReceived) {
-  return res.status(400).json({ msg: "Exceeds available funds" });
-}
+    if (total > project.totalFundReceived) {
+      return res.status(400).json({ msg: "Exceeds available funds" });
+    }
 
     // ✅ Append PI submission (NO overwrite)
+    const uploadResult = await uploadPdfToCloudinary(
+  req.file.buffer,
+  "e-procura-uploads",
+  req.file.originalname
+);
+
     const piSubmission = {
-      title:parsedForm.title,
+      title: parsedForm.title,
       divisionHeads: parsedForm.divisionHeads,
-      attachmentPath: req.file.path,
+      attachmentUrl: uploadResult.secure_url,
+      attachmentPublicId: uploadResult.public_id,
       attachmentOriginalName: req.file.originalname,
       pdfHash: parsedForm.pdfHash,
       signaturePI: req.body.signature,
@@ -265,16 +273,12 @@ if (total > project.totalFundReceived) {
 
     await project.save();
 
-    console.log("✅ PI submission added:", project._id);
-
     res.json({
       success: true,
       projectId: project._id,
     });
-
   } catch (err) {
-    console.error("db " + err);
+    console.error("Project update error:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
-

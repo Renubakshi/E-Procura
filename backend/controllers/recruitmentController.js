@@ -7,17 +7,21 @@ import puppeteer from "puppeteer";
 import { fileURLToPath } from "url";
 import CodeCreation from "../models/codeCreation.js";
 import User from "../models/user.js";
+import uploadPdfToCloudinary from "../utils/uploadPdfToCloudinary.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const generateApprovalLetter = async (req, res) => {
   try {
+    if (req.user.role !== "PI") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
     const data = req.body;
-    // Current Date
-
     const currentDate = new Date().toLocaleDateString("en-GB");
-
     // Load Template
 
     const templatePath = path.join(
@@ -212,37 +216,26 @@ const generateApprovalLetter = async (req, res) => {
 
     await page.setContent(html);
 
-    // File Name
-
-    const pdfFileName = `approval-letter-${Date.now()}.pdf`;
-
-    const pdfPath = path.join(__dirname, `../generated-pdfs/${pdfFileName}`);
-
     // Generate PDF
 
-    await page.pdf({
-      path: pdfPath,
-
+    const pdfBuffer= await page.pdf({
       format: "A4",
-
       printBackground: true,
-
       displayHeaderFooter: true,
-
       headerTemplate: headerTemplate,
-
       footerTemplate: footerTemplate,
     });
+    const pdfUrl = await uploadPdfToCloudinary(pdfBuffer,"e-procura-generated-pdfs",`approval-letter-${Date.now()}.pdf`);
 
     await browser.close();
 
     res.status(200).json({
       success: true,
       message: "Approval Letter Generated",
-      pdf: pdfFileName,
+      pdf: pdfUrl.secure_url,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Generate approval letter error:", error);
 
     res.status(500).json({
       success: false,
@@ -253,6 +246,12 @@ const generateApprovalLetter = async (req, res) => {
 
 const createRecruitmentAdvertisement = async (req, res) => {
   try {
+    if (req.user.role !== "PI") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
     // =========================
     // SAVE DATA IN DATABASE
     // =========================
@@ -348,7 +347,6 @@ const createRecruitmentAdvertisement = async (req, res) => {
       attachment: req.file?.path,
       signaturePI: req.body.signature,
     };
-    console.log("controller", bodyData);
 
     // ======================================
     // FIND PROJECT
@@ -370,9 +368,7 @@ const createRecruitmentAdvertisement = async (req, res) => {
     // ======================================
 
     const fundHead = bodyData.fundHead;
-
     const requestedAmount = Number(bodyData.requestedAmount) || 0;
-
     const currentFund = project.piSubmissions?.divisionHeads?.[fundHead] || 0;
 
     // ======================================
@@ -600,38 +596,25 @@ const createRecruitmentAdvertisement = async (req, res) => {
 
     await page.setContent(html);
 
-    // =========================
-    // PDF FILE NAME
-    // =========================
-
-    const pdfFileName = `recruitment-${Date.now()}.pdf`;
-
-    const pdfPath = path.join(__dirname, `../generated-pdfs/${pdfFileName}`);
 
     // =========================
     // GENERATE PDF
     // =========================
-    await page.pdf({
-      path: pdfPath,
-
+    const pdfBuffer = await page.pdf({
       format: "A4",
-
       printBackground: true,
-
       displayHeaderFooter: true,
-
       headerTemplate: headerTemplate,
-
       footerTemplate: footerTemplate,
     });
 
     await browser.close();
-
+const uploadResult = await uploadPdfToCloudinary(pdfBuffer,"e-procura-generated-pdfs",`recruitment-${Date.now()}.pdf`);
     // =========================
     // SAVE PDF PATH
     // =========================
 
-    recruitment.pdfPath = pdfFileName;
+    recruitment.recruitmentAdPath = uploadResult.secure_url;
 
     await recruitment.save();
 
@@ -642,11 +625,11 @@ const createRecruitmentAdvertisement = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Recruitment Advertisement Generated",
-      pdf: pdfFileName,
+      pdf: uploadResult,
       recruitment,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Recruitment advertisement error:", error);
 
     res.status(500).json({
       success: false,
@@ -703,7 +686,7 @@ const getAllRecruitments = async (req, res) => {
       recruitments: updatedRecruitments,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Get recruitments error:", error);
 
     res.status(500).json({
       success: false,
@@ -714,6 +697,12 @@ const getAllRecruitments = async (req, res) => {
 
 const approveRecruitment = async (req, res) => {
   try {
+    if (req.user.role !== "DORD") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
     const { id } = req.params;
 
     const payload = JSON.parse(req.body.payload);
@@ -721,9 +710,6 @@ const approveRecruitment = async (req, res) => {
     const signatureDean = req.body.signatureDean;
 
     const signedApprovalPdf = req.file ? `/uploads/${req.file.filename}` : "";
-
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
 
     // ======================================
     // FIND DEAN
@@ -818,7 +804,7 @@ const approveRecruitment = async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Approve recruitment error:", error);
 
     res.status(500).json({
       success: false,
@@ -829,6 +815,13 @@ const approveRecruitment = async (req, res) => {
 
 const rejectRecruitment = async (req, res) => {
   try {
+    if (req.user.role !== "DORD") {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
     const { id } = req.params;
 
     const { payload, signatureDean } = req.body;
@@ -950,11 +943,11 @@ const rejectRecruitment = async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    alert(error.response?.data?.message || "Wrong Private Key");
+console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };

@@ -1,52 +1,46 @@
 import { useState } from "react";
 import { generateKeyPair, downloadFile } from "../../utils/keyUtils";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function GenerateKey() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleGenerate = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { publicKeyPem, privateKeyPem } = await generateKeyPair();
+      const { publicKeyPem, privateKeyPem } = await generateKeyPair();
+    
+      // save public key to backend
+      await axiosInstance.post(`/api/save-public-key`, {
+        email: localStorage.getItem("signupEmail"),
+        publicKey: publicKeyPem,
+      });
 
-    console.log("🟡 Sending to backend:");
-  console.log({
-    email: localStorage.getItem("signupEmail"),
-    publicKey: publicKeyPem,
-  });
-     // 🟢 Save public key to backend
-  await fetch("/api/save-public-key", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: localStorage.getItem("signupEmail"),   // <--- ye email store hona chahiye
-      publicKey: publicKeyPem,
-    }),
-  });
+      downloadFile("signing-key.pem", privateKeyPem);
 
-    // TODO: POST public key to backend
-    console.log("Public Key:", publicKeyPem);
+      setSuccess(true);
+    } catch (err) {
+      console.error(err);
 
-    // Download private key
-    downloadFile("signing-key.pem", privateKeyPem);
-
-    setLoading(false);
-    setSuccess(true);
+      alert(err.response?.data?.message || "Failed to save public key");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--primary)] text-white p-4 sm:p-6">
       <div className="bg-[var(--primaryAccent)] p-6 sm:p-8 md:p-10 rounded-xl w-full max-w-[450px] shadow-xl">
-
         {!success ? (
           <>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">Generate Your Key Pair</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">
+              Generate Your Key Pair
+            </h1>
             <p className="mb-6 text-[var(--light)]">
-              Your account is almost ready.  
-              Click the button below to generate your secure keys.
+              Your account is almost ready. Click the button below to generate
+              your secure keys.
             </p>
 
             <button
@@ -58,9 +52,12 @@ export default function GenerateKey() {
           </>
         ) : (
           <>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-3">Keys Generated Successfully 🎉</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold mb-3">
+              Keys Generated Successfully 🎉
+            </h1>
             <p className="text-[var(--light)] mb-6">
-              Your Verification key is saved, and Signing key has been downloaded.
+              Your Verification key is saved, and Signing key has been
+              downloaded.
             </p>
 
             <button

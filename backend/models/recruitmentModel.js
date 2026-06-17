@@ -189,7 +189,7 @@ const recruitmentSchema = new mongoose.Schema(
     // PDF DETAILS
     // ======================================
 
-    pdfPath: {
+    recruitmentAdPath: {
       type: String,
     },
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { API_URL, axiosInstance } from "../../config/api";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import CryptoJS from "crypto-js";
 
@@ -102,7 +102,7 @@ export default function SignupPage() {
         password: hashedPassword,
         confirmPassword: hashedPassword,
       };
-      const res = await axios.post("/api/signup", signupData);
+      const res = await axiosInstance.post(`/api/signup`, signupData);
 
       if (res.data.success) {
         localStorage.setItem("signupEmail", form.email);

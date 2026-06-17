@@ -17,7 +17,7 @@ import {
 // PI ROUTES
 // ======================================
 
-router.post("/generate-approval-letter", generateApprovalLetter);
+router.post("/generate-approval-letter",auth(["PI"]), generateApprovalLetter);
 
 router.post(
   "/create-advertisement",
@@ -39,11 +39,11 @@ router.get("/", getAllRecruitments);
 
 // Approve recruitment
 
-router.put("/:id/approve", upload.single("signedPdf"), approveRecruitment);
+router.put("/:id/approve",auth(["DORD"]), upload.single("signedPdf"), approveRecruitment);
 
 // Reject recruitment
 
-router.put("/:id/reject", rejectRecruitment);
+router.put("/:id/reject",auth(["DORD"]), rejectRecruitment);
 
 router.put("/:id/approval-letter", async (req, res) => {
   try {
@@ -66,7 +66,7 @@ router.put("/:id/approval-letter", async (req, res) => {
       recruitment,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,

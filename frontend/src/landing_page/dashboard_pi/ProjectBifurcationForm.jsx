@@ -8,6 +8,7 @@ import {
   hashPdf,
   canonicalPayload,
 } from "../../utils/digitalSignature";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function ProjectBifurcationForm() {
   const navigate = useNavigate();
@@ -32,14 +33,10 @@ export default function ProjectBifurcationForm() {
 
   const fetchProject = async () => {
     try {
-      const res = await fetch(`/api/projects/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const res = await axiosInstance.get(`/api/projects/${id}`, {
       });
 
-      const data = await res.json();
-      console.log("rndData", data);
+      const data = res.data;
 
       setFormData((prev) => ({
         ...prev,
@@ -99,7 +96,6 @@ export default function ProjectBifurcationForm() {
     }
 
     const pdfHash = await hashPdf(formData.attachment);
-    console.log("pdfHash", pdfHash);
 
     const payload = canonicalPayload({
       title: formData.title,
@@ -121,22 +117,20 @@ export default function ProjectBifurcationForm() {
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`/api/projects/${id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: sendData,
-    });
+    try {
+      const res = await axiosInstance.patch(`/api/projects/${id}`, sendData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    const data = await res.json();
-    if (res.ok) {
       alert("✅ Submitted");
       navigate("/pi-dashboard");
-    } else {
-      console.log(data);
+    } catch (err) {
+      console.error(err);
 
-      alert(data.msg);
+      alert(err.response?.data?.msg || "Submission failed");
     }
   }
   return (

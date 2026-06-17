@@ -6,6 +6,7 @@ import {
   signData,
   canonicalPayload,
 } from "../../utils/digitalSignature";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function ManpowerHiringForms({
   projectData,
@@ -15,30 +16,29 @@ export default function ManpowerHiringForms({
   refreshProject,
 }) {
   const navigate = useNavigate();
-  const [adPdf, setAdPdf] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     projectTitle: "",
     projectCode: "",
-    sponsoringAgency: "",
+    sponsoringAgency: "fggh",
     piName: "",
-    piDesignation: "",
+    piDesignation: "ggyt",
     piDepartment: "",
-    officeAddress: "",
+    officeAddress: "rtr",
     piEmail: "",
-    piWebsite: "",
+    piWebsite: "yuyu",
 
     positions: [
       {
-        positionName: "",
-        numberOfPosts: "",
-        ageLimit: "",
-        salaryStart: "",
-        salaryEnd: "",
+        positionName: "ghgh",
+        numberOfPosts: "1",
+        ageLimit: "34",
+        salaryStart: "1",
+        salaryEnd: "2",
         duration: "",
 
-        essentialQualifications: [""],
-        desirableQualifications: [""],
+        essentialQualifications: ["ytyt"],
+        desirableQualifications: ["fryty"],
       },
     ],
     process: "",
@@ -51,15 +51,12 @@ export default function ManpowerHiringForms({
     submissionDeadline: "",
     interviewDate: "",
     interviewMode: "",
-    venue: "",
+    venue: "hgh",
     reportingTime: "",
-
-    committeeMembers: [""],
+    committeeMembers: ["fhgh"],
     attachment: null,
     privateKeyFile: null,
   });
-  console.log("head", selectedHead);
-  console.log("process", process);
 
   const getDurationInMonths = (durationValue) => {
     if (!durationValue) return 0;
@@ -150,13 +147,6 @@ export default function ManpowerHiringForms({
     });
   };
 
-  const handleDownload = (fileName) => {
-    if (!fileName) {
-      alert("PDF not generated yet");
-      return;
-    }
-    window.open(`/api/files/download-pdf/${fileName}`, "_blank");
-  };
   // =========================
   // HANDLE POSITION CHANGE
   // =========================
@@ -335,28 +325,19 @@ export default function ManpowerHiringForms({
       // RECRUITMENT PDF
       // =========================
 
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/recruitment/create-advertisement", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: sendData,
-      });
+      const res = await axiosInstance.post(
+        `/api/recruitment/create-advertisement`,
+        sendData,
+        {},
+      );
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Something went wrong");
-        return;
-      }
+      const data = res.data;
 
       alert("Recruitment Advertisement Generated Successfully");
-      setAdPdf(data.pdf);
 
       // Recruitment PDF open
-      window.open(`/api/files/download-pdf/${data.pdf}`, "_blank");
-
+      window.open(data.pdf?.secure_url, "_blank");
+      
       // =========================
       // APPROVAL LETTER PDF
       // =========================
@@ -372,46 +353,34 @@ export default function ManpowerHiringForms({
         committeeMembers: formData.committeeMembers,
       };
 
-      const approvalRes = await fetch(
-        "/api/recruitment/generate-approval-letter",
+      const approvalRes = await axiosInstance.post(
+        `/api/recruitment/generate-approval-letter`,
+          approvalPayload,
+      );
+
+      const approvalData = approvalRes.data;
+
+      // Approval PDF open
+      window.open(approvalData.pdf, "_blank");
+      
+
+      await axiosInstance.put(
+        `/api/recruitment/${data.recruitment._id}/approval-letter`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(approvalPayload),
+          approvalLetterPath: approvalData.pdf,
         },
       );
 
-      const approvalData = await approvalRes.json();
+      alert("✅ PDFs downloaded successfully & form submitted");
 
-      if (approvalRes.ok) {
-        // Approval PDF open
-        window.open(`/api/files/download-pdf/${approvalData.pdf}`, "_blank");
-
-        await fetch(
-          `/api/recruitment/${data.recruitment._id}/approval-letter`,
-          {
-            method: "PUT",
-
-            headers: {
-              "Content-Type": "application/json",
-            },
-
-            body: JSON.stringify({
-              approvalLetterPath: `/generated-pdfs/${approvalData.pdf}`,
-            }),
-          },
-        );
-
-        alert("✅ PDFs downloaded successfully & form submitted");
-
-        await refreshProject();
-        navigate("/pi-dashboard");
-      }
+      await refreshProject();
+      navigate("/pi-dashboard");
     } catch (err) {
-      console.log(err);
-      alert("Server Error");
+      alert(
+        err.response?.data?.message ||
+          err.response?.data?.msg ||
+          "Server Error",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -430,7 +399,7 @@ export default function ManpowerHiringForms({
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 md:p-8">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center ">
-          Recruitment Staff Member Form
+          Project Staff Recruitment Form
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-10">
@@ -653,7 +622,9 @@ export default function ManpowerHiringForms({
                       onChange={(e) => handlePositionChange(positionIndex, e)}
                       className={inputClass}
                     />
-
+                    <p className="text-xs text-gray-500 mt-2 mb-1">
+                      Suggested Agencies
+                    </p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {[
                         "Junior Research Fellow (JRF)",
@@ -677,7 +648,7 @@ export default function ManpowerHiringForms({
                               positions: updated,
                             });
                           }}
-                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
+                          className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full transition"
                         >
                           {item}
                         </button>
@@ -767,7 +738,9 @@ export default function ManpowerHiringForms({
                       onChange={(e) => handlePositionChange(positionIndex, e)}
                       className={inputClass}
                     />
-
+                    <p className="text-xs text-gray-500 mt-2 mb-1">
+                      Suggested Agencies
+                    </p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {[
                         "89 Days (Extendable)",
@@ -789,7 +762,7 @@ export default function ManpowerHiringForms({
                               positions: updated,
                             });
                           }}
-                          className="px-3 py-1 text-sm bg-gray-200 hover:bg-blue-200 rounded-full"
+                          className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 rounded-full transition"
                         >
                           {duration}
                         </button>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { API_URL, axiosInstance } from "../../config/api";
 import {
   readPem,
   importPrivateKey,
@@ -39,13 +39,13 @@ function DashboardDORD() {
     try {
       setLoading(true);
 
-      const res = await axios.get("/api/recruitment");
+      const res = await axiosInstance.get(`/api/recruitment`);
 
       setProjects(res.data.recruitments);
 
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       setLoading(false);
     }
@@ -113,8 +113,8 @@ function DashboardDORD() {
 
       formData.append("signatureDean", signatureDean);
 
-      await axios.put(
-        `http://localhost:5001/api/recruitment/${project._id}/approve`,
+      await axiosInstance.put(
+        `/api/recruitment/${project._id}/approve`,
         formData,
       );
 
@@ -123,11 +123,10 @@ function DashboardDORD() {
       setShowApproveModal(false);
       setPrivateKeyFile(null);
       setSelectedProject(null);
-      // await axios.put(`/api/recruitment/${id}/approve`);
 
       fetchRecruitments();
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       alert(error.response?.data?.message || "Approval failed");
     }
@@ -154,7 +153,6 @@ function DashboardDORD() {
       // ======================================
       // PAYLOAD
       // ======================================
-      // await axios.put(`/api/recruitment/${id}/reject`);
 
       const payload = canonicalPayload({
         recruitmentId: project._id,
@@ -179,13 +177,10 @@ function DashboardDORD() {
       // API CALL
       // ======================================
 
-      await axios.put(
-        `http://localhost:5001/api/recruitment/${project._id}/reject`,
-        {
-          payload,
-          signatureDean,
-        },
-      );
+      await axiosInstance.put(`/api/recruitment/${project._id}/reject`, {
+        payload,
+        signatureDean,
+      });
 
       alert("Recruitment Rejected");
       setShowRejectModal(false);
@@ -194,7 +189,7 @@ function DashboardDORD() {
       setSelectedProject(null);
       fetchRecruitments();
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       alert(error.response?.data?.message || "Rejection failed");
     }
@@ -241,7 +236,7 @@ function DashboardDORD() {
       return;
     }
 
-    window.open(`/generated-pdfs/${pdfName}`, "_blank");
+    window.open(pdfName, "_blank");
   };
 
   // ======================================
@@ -361,10 +356,6 @@ function DashboardDORD() {
               </tr>
             </thead>
 
-            {/* ====================================== */}
-            {/* TABLE BODY */}
-            {/* ====================================== */}
-
             <tbody>
               {loading ? (
                 <tr>
@@ -480,7 +471,7 @@ function DashboardDORD() {
 
                       <td className="px-6 py-6 text-center">
                         <button
-                          onClick={() => viewPDF(project.pdfPath)}
+                          onClick={() => viewPDF(project.recruitmentAdPath)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
                         >
                           View Ad
@@ -493,12 +484,7 @@ function DashboardDORD() {
                         {project.approvalLetterPath ? (
                           <button
                             onClick={() =>
-                              viewPDF(
-                                project.approvalLetterPath.replace(
-                                  "/generated-pdfs/",
-                                  "",
-                                ),
-                              )
+                              viewPDF(project.approvalLetterPath)
                             }
                             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition"
                           >
@@ -592,7 +578,6 @@ function DashboardDORD() {
                     }}
                     className="w-full border rounded-xl p-3"
                   />
-
                   {errors.privateKey && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.privateKey}

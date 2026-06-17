@@ -40,7 +40,9 @@ const codeCreationSchema = new mongoose.Schema({
         Overhead: { type: Number},
       },
       // 📎 FILE INFO (not actual file)
-      attachmentPath: { type: String },
+      // attachmentPath: { type: String },
+      attachmentUrl: { type: String },
+      attachmentPublicId: { type: String },
       attachmentOriginalName: { type: String },
       pdfHash: { type: String},
       signaturePI: { type: String },

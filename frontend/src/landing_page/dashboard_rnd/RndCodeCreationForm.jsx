@@ -6,6 +6,7 @@ import {
   signData,
   canonicalPayload,
 } from "../../../src/utils/digitalSignature";
+import { API_URL, axiosInstance } from "../../config/api";
 
 // component
 export default function RndCodeCreationForm({ onClose }) {
@@ -39,20 +40,11 @@ export default function RndCodeCreationForm({ onClose }) {
       setLoadingCode(true);
 
       try {
-        const res = await fetch(
-          "/api/projects/project-code",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ department: value }),
-          },
-        );
+        const res = await axiosInstance.post(`/api/projects/project-code`, {
+          department: value,
+        });
 
-        if (!res.ok) throw new Error("Failed");
-
-        const data = await res.json();
+        const data = res.data;
 
         setFormData((prev) => ({
           ...prev,
@@ -83,9 +75,10 @@ export default function RndCodeCreationForm({ onClose }) {
 
   // pilist for dropdown list
   useEffect(() => {
-    fetch("/api/projects/pi-list")
-      .then((res) => res.json())
-      .then((data) => setPiList(data));
+    axiosInstance
+    .get("/api/projects/pi-list")
+    .then((res) => setPiList(res.data))
+    .catch((err) => console.error(err));
   }, []);
   const options = piList.map((pi) => ({
     value: pi.fullName,
@@ -122,8 +115,9 @@ export default function RndCodeCreationForm({ onClose }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
+  try {
     if (!validate()) return;
 
     const payload = canonicalPayload({
@@ -141,26 +135,25 @@ export default function RndCodeCreationForm({ onClose }) {
 
     const signature = await signData(privateKey, payload);
 
-    const res = await fetch("/api/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...formData,
-        payload,
-        signature,
-      }),
-    });
+    const res = await axiosInstance.post(`/api/projects`, {
+      ...formData,
+      payload,
+      signature,
+    },
+     {
+  });
 
-    const data = await res.json();
+    setSuccess(true);
 
-    if (res.ok) {
-      setSuccess(true);
-    } else {
-      alert("Signature verification failed");
-    }
-  };
+  } catch (err) {
+    console.error(err);
+
+    alert(
+      err.response?.data?.message ||
+      "Signature verification failed"
+    );
+  }
+};
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">

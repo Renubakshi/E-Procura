@@ -1,6 +1,7 @@
 import { useSearchParams, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BackButton from "../../components/BackButton";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function ProjectSummary() {
   const { id } = useParams();
@@ -12,23 +13,13 @@ export default function ProjectSummary() {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const token = localStorage.getItem("token");
 
-        const res = await fetch(`/api/projects/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await axiosInstance.get(`/api/projects/${id}`, {
         });
 
-        if (!res.ok) {
-          alert("Unable to fetch project");
-          return;
-        }
-
-        const data = await res.json();
-
-        setProject(data);
+        setProject(res.data);
       } catch (err) {
+        alert("Unable to fetch project");
         console.error(err);
       } finally {
         setLoading(false);
@@ -44,29 +35,21 @@ export default function ProjectSummary() {
   // Open File with Tamper Detection
   const openFile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const res = await axiosInstance.get(`/api/files/${project._id}`, {
+        responseType: "blob",
+      });
 
-      const res = await fetch(
-        `/api/files/${project._id}`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      console.log("res", res);
+const blob = new Blob([res.data], {
+  type: "application/pdf",
+});
 
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.message || "⚠ FILE INTEGRITY COMPROMISED!");
-        return;
-      }
-      //  Convert response to blob
-      const blob = await res.blob();
+const fileURL = window.URL.createObjectURL(blob);
 
-      // Create temporary URL
-      const fileURL = window.URL.createObjectURL(blob);
+window.open(fileURL, "_blank");
 
-      // Open in new tab
       window.open(fileURL, "_blank");
     } catch (err) {
-      alert("Unable to open file");
+      alert(err.response?.data?.message || "⚠ FILE INTEGRITY COMPROMISED!");
     }
   };
 
@@ -74,7 +57,9 @@ export default function ProjectSummary() {
     <div className="min-h-screen bg-[#d6e3da] p-4 sm:p-6 md:p-10">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">Project Summary</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
+          Project Summary
+        </h1>
         <div className="flex justify-end m-4">
           <BackButton />
         </div>
@@ -151,7 +136,7 @@ export default function ProjectSummary() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-100 p-4 rounded-lg border">
           <div>
             <p className="text-gray-700 font-medium">
-              {project.attachmentOriginalName}
+              {project.piSubmissions?.attachmentOriginalName}
             </p>
             <p className="text-sm text-gray-500">Uploaded</p>
           </div>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function DashboardPI() {
   const navigate = useNavigate();
@@ -13,23 +14,11 @@ export default function DashboardPI() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const token = localStorage.getItem("token");
 
-        const res = await fetch(
-          "/api/projects/bifurcated",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        const res = await axiosInstance.get(`/api/projects/bifurcated`, {
+        });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch projects");
-        }
-
-        const data = await res.json();
-        setProjects(data);
+        setProjects(res.data);
       } catch (err) {
         console.error("Error fetching projects:", err);
       }
@@ -100,39 +89,37 @@ export default function DashboardPI() {
               <h3 className="text-lg font-semibold text-gray-800">
                 {proj.piSubmissions?.title}
               </h3>
-
               <p className="text-sm text-gray-500 mb-4">{proj.projectCode}</p>
-
               {/* STATUS BADGE */}
               <span className="inline-block mb-4 px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
                 Bifurcated ✔
               </span>
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-start">
+                <button
+                  onClick={() => navigate(`/summary/${proj._id}`)}
+                  className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition w-full sm:w-auto"
+                >
+                  View Summary
+                </button>
 
-<div className="flex flex-col sm:flex-row gap-3 sm:items-start">
-  <button
-    onClick={() => navigate(`/summary/${proj._id}`)}
-    className="border border-[#aec3b0] px-4 py-2 rounded-lg hover:bg-[#aec3b0] hover:text-black transition w-full sm:w-auto"
-  >
-    View Summary
-  </button>
+                <button
+                  onClick={() => navigate(`/fund-booking/${proj._id}`)}
+                  className="btn-primary w-full sm:w-auto"
+                >
+                  Fund Booking
+                </button>
 
-  <button
-    onClick={() => navigate(`/fund-booking/${proj._id}`)}
-    className="btn-primary w-full sm:w-auto"
-  >
-    Fund Booking
-  </button>
-
-  <button
-    className="btn-primary w-full sm:w-auto flex flex-col items-center"
-    onClick={() => navigate("/pi-fund-requests")}
-  >
-    <span>Fund Booking Status</span>
-    <span className="text-xs text-gray-600">
-      Track pending, approved and rejected requests
-    </span>
-  </button>
-</div>            </div>
+                <button
+                  className="btn-primary w-full sm:w-auto flex flex-col items-center"
+                  onClick={() => navigate("/pi-fund-requests")}
+                >
+                  <span>Fund Booking Status</span>
+                  <span className="text-xs text-gray-600">
+                    Track pending, approved and rejected requests
+                  </span>
+                </button>
+              </div>{" "}
+            </div>
           ))}
         </div>
       )}

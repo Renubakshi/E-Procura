@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../../components/BackButton";
+import { API_URL, axiosInstance } from "../../config/api";
 
 export default function FundBifurcationList() {
   const [projects, setProjects] = useState([]);
@@ -13,15 +14,9 @@ export default function FundBifurcationList() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch("/api/projects", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const res = await axiosInstance.get(`/api/projects`, {
       });
-
-      const data = await res.json();
-      setProjects(data);
+      setProjects(res.data);
     } catch (err) {
       console.error("Error fetching projects:", err);
     } finally {

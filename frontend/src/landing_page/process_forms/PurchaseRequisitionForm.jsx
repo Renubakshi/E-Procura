@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { API_URL, axiosInstance } from "../../config/api";
 import { useLocation } from "react-router-dom";
 
 
@@ -96,65 +96,11 @@ useEffect(() => {
     setForm({ ...form, suggestedSuppliers: suppliers });
   }
   
-//   Handle Submit
-//   async function handleSecureSubmit() {
-//   try {
-//     if (!privateKeyFile) {
-//       alert("Upload private key first");
-//       return;
-//     }
-
-//     // 1️⃣ Generate PDF (even if empty form)
-//     // const pdfBlob = await generatePDF(form);
-
-//     // // 2️⃣ Hash PDF
-//     // const buffer = await pdfBlob.arrayBuffer();
-//     // const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-
-//     // const hashHex = Array.from(new Uint8Array(hashBuffer))
-//     //   .map(b => b.toString(16).padStart(2, "0"))
-//     //   .join("");
-
-//     // console.log("PDF HASH:", hashHex);
-
-//     // 3️⃣ Read Private Key
-//     const pem = await readPem(privateKeyFile);
-//     const privateKey = await importPrivateKey(pem);
-
-//     // 4️⃣ Sign Hash
-//     const signature = await signHash(privateKey, hashHex);
-
-//     console.log("SIGNATURE:", signature);
-
-//     // 5️⃣ Send to Backend
-//     const formDataToSend = new FormData();
-//     // formDataToSend.append("pdf", pdfBlob);
-//     formDataToSend.append("signature", signature);
-//     // formDataToSend.append("pdfHash", hashHex); // Important
-
-//     await axios.post(
-//   "/purchase/submit",
-//   formDataToSend,
-//   {
-//     headers: {
-//       Authorization: `Bearer ${localStorage.getItem("token")}`
-//     }
-//   }
-// );
-
-//     alert("✅ PDF Generated & Signed Successfully");
-
-//   } catch (err) {
-//     console.error(err);
-//     alert("❌ Submission Failed");
-//   }
-// }
-
 async function handleSecureSubmit() {
   try {
-    const response = await axios.post(
-      "/purchase/submit",
-      form, // send full form JSON
+    const response = await axiosInstance.post(
+      `/purchase/submit`,
+      form,
       {
         responseType: "blob", // IMPORTANT
         headers: {

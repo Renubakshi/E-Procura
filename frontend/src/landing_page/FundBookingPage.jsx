@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ManpowerHiringForm from "./process_forms/ManpowerHiringForms";
+import { API_URL, axiosInstance } from "../config/api";
 
 export default function FundBookingPage() {
   const { id } = useParams(); // id from route
@@ -79,25 +80,12 @@ export default function FundBookingPage() {
 
   const fetchProject = async () => {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(`/api/projects/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axiosInstance.get(`/api/projects/${id}`, {
       });
-
-      if (!res.ok) {
-        alert("Unable to fetch project");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("code creation data", data);
-
-      setProjectData(data);
+      setProjectData(res.data);
     } catch (err) {
       console.error(err);
+      alert("Unable to fetch project");
     } finally {
       setLoading(false);
     }
@@ -202,24 +190,21 @@ export default function FundBookingPage() {
             />
           </div>
         )}
-        {process && process !== "manpower_hiring" &&(
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white shadow-xl rounded-2xl p-10 text-center max-w-md w-full">
-        <h1 className="text-3xl font-bold text-blue-700 mb-4">
-          🚧 Coming Soon
-        </h1>
+        {process && process !== "manpower_hiring" && (
+          <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <div className="bg-white shadow-xl rounded-2xl p-10 text-center max-w-md w-full">
+              <h1 className="text-3xl font-bold text-blue-700 mb-4">
+                🚧 Coming Soon
+              </h1>
 
-        <p className="text-gray-600 text-lg">
-          This process module is currently under development.
-        </p>
+              <p className="text-gray-600 text-lg">
+                This process module is currently under development.
+              </p>
 
-        <p className="text-gray-500 mt-2">
-          Please check back later.
-        </p>
-      </div>
-    </div>
-  )
-}
+              <p className="text-gray-500 mt-2">Please check back later.</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

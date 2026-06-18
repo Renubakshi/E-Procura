@@ -587,7 +587,8 @@ const createRecruitmentAdvertisement = async (req, res) => {
     // =========================
     // LAUNCH BROWSER
     // =========================
-
+console.log("Puppeteer executable path:");
+console.log(puppeteer.executablePath());
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],

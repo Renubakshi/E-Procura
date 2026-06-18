@@ -589,9 +589,14 @@ const createRecruitmentAdvertisement = async (req, res) => {
     // =========================
 console.log("Puppeteer executable path:");
 console.log(puppeteer.executablePath());
+const chromePath = puppeteer.executablePath();
+
+console.log("Chrome path:", chromePath);
+console.log("Chrome exists:", fs.existsSync(chromePath));
+
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox","--disable-dev-shm-usage",],
     });
 
     const page = await browser.newPage();

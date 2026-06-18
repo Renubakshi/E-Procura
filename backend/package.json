@@ -13,6 +13,7 @@
   "author": "Renu Bakshi",
   "license": "ISC",
   "dependencies": {
+    "@sparticuz/chromium": "^149.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
@@ -25,6 +26,7 @@
     "mongoose": "^8.20.2",
     "multer": "^2.0.2",
     "puppeteer": "^24.37.5",
+    "puppeteer-core": "^25.1.0",
     "router": "^2.2.0",
     "streamifier": "^0.1.1"
   }

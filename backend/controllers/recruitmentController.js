@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
 import { fileURLToPath } from "url";
 import CodeCreation from "../models/codeCreation.js";
 import User from "../models/user.js";
@@ -595,9 +596,10 @@ console.log("Chrome path:", chromePath);
 console.log("Chrome exists:", fs.existsSync(chromePath));
 
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox","--disable-dev-shm-usage",],
-    });
+  executablePath: await chromium.executablePath(),
+  args: chromium.args,
+  headless: true,
+});
 
     const page = await browser.newPage();
 

@@ -27,11 +27,13 @@ app.use(
     credentials:true,
   }),
 );
-app.use("/uploads", express.static("uploads"));
+// app.use("/uploads", express.static("uploads"));
 // app.use("/generated-pdfs", express.static("generated-pdfs"));
 
 // connect to DB
 connectDB();
+console.log("FRONTEND_URL =", process.env.FRONTEND_URL);
+console.log("JWT_SECRET =", process.env.JWT_SECRET ? "Loaded" : "Missing");
 
 // SIGNUP API
 app.post("/api/signup", async (req, res) => {
@@ -173,4 +175,6 @@ app.use("/api/recruitment", recruitmentRoutes);
 
 // SERVER RUN
 const PORT = process.env.PORT || 5000;
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

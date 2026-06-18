@@ -245,6 +245,7 @@ const generateApprovalLetter = async (req, res) => {
 };
 
 const createRecruitmentAdvertisement = async (req, res) => {
+  console.log("CREATE ADVERTISEMENT API HIT");
   try {
     if (req.user.role !== "PI") {
       return res.status(403).json({
@@ -595,7 +596,7 @@ const createRecruitmentAdvertisement = async (req, res) => {
     const page = await browser.newPage();
 
     await page.setContent(html);
-
+console.log("EJS rendered successfully");
 
     // =========================
     // GENERATE PDF
@@ -613,11 +614,11 @@ const uploadResult = await uploadPdfToCloudinary(pdfBuffer,"e-procura-generated-
     // =========================
     // SAVE PDF PATH
     // =========================
-
+console.log("PDF generated successfully");
     recruitment.recruitmentAdPath = uploadResult.secure_url;
 
     await recruitment.save();
-
+console.log("Cloudinary upload successful");
     // =========================
     // RESPONSE
     // =========================

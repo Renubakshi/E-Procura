@@ -27,8 +27,6 @@ app.use(
     credentials:true,
   }),
 );
-// app.use("/uploads", express.static("uploads"));
-// app.use("/generated-pdfs", express.static("generated-pdfs"));
 
 // connect to DB
 connectDB();

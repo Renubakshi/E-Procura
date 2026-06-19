@@ -209,9 +209,10 @@ const generateApprovalLetter = async (req, res) => {
     // Launch Browser
 
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+  executablePath: await chromium.executablePath(),
+  args: chromium.args,
+  headless: true,
+});
 
     const page = await browser.newPage();
 

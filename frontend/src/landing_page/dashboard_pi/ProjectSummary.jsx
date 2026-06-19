@@ -2,6 +2,7 @@ import { useSearchParams, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BackButton from "../../components/BackButton";
 import { API_URL, axiosInstance } from "../../config/api";
+import signedBadge from "../../assets/signed-badge.jpg"
 
 export default function ProjectSummary() {
   const { id } = useParams();
@@ -154,7 +155,7 @@ window.open(fileURL, "_blank");
 
       <div className="flex items-center bg-green-50 border border-green-300 mt-6 rounded-lg shadow-sm">
         <img
-          src="../../assets/signed-badge.jpg"
+          src={signedBadge}
           alt="Signed Badge"
           className="h-20 object-contain"
         />

@@ -154,7 +154,7 @@ window.open(fileURL, "_blank");
 
       <div className="flex items-center bg-green-50 border border-green-300 mt-6 rounded-lg shadow-sm">
         <img
-          src="/assets/signed-badge.jpg"
+          src="../../assets/signed-badge.png"
           alt="Signed Badge"
           className="h-20 object-contain"
         />
